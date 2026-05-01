@@ -1,0 +1,12 @@
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          model: qwen-plus
+          temperature: 0.3
+
+logging:
+  level:
+    com.smartagent: info
+    org.springframework.ai: warn

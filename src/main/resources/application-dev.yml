@@ -1,0 +1,16 @@
+# 开发环境特有配置
+spring:
+  ai:
+    openai:
+      # 开发环境可以用更便宜的模型
+      chat:
+        options:
+          model: deepseek-v4-flash
+          temperature: 0.7
+          timeout: 60s
+
+# 开发环境开启更详细的日志
+logging:
+  level:
+    com.smartagent: debug
+    org.springframework.ai: debug

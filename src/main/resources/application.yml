@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: smart-agent
+  profiles:
+    active: dev
+
+  # ==================== Spring AI 配置 ====================
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: ${DeepSeek_API_KEY}
+      chat:
+        options:
+          model: deepseek-v4-flash
+          temperature: 0.7
+          max-tokens: 4096
+
+# ==================== 日志配置 ====================
+logging:
+  level:
+    com.smartagent: debug
+    org.springframework.ai: debug
