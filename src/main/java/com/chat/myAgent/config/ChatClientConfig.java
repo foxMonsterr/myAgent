@@ -52,6 +52,22 @@ public class ChatClientConfig {
     }
 
     /**
+     * 带记忆的工具调用 ChatClient
+     * 如果 ToolAgent 的 chatWithMemory 方法不生效，使用这个 Bean
+     */
+    @Bean("toolChatClient")
+    public ChatClient toolChatClient(ChatClient.Builder builder, ChatMemory chatMemory,
+                                     @Value("classpath:prompts/tool-agent-system.st") Resource toolPrompt) {
+        return builder
+                .defaultSystem(toolPrompt)
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+                )
+                .build();
+    }
+
+
+    /**
      * 扩展预留：
      * @Bean("toolChatClient")   → 阶段3: 带工具调用
      * @Bean("ragChatClient")    → 阶段4: 带 RAG 检索
