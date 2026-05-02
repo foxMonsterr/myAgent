@@ -21,6 +21,13 @@ spring:
         max-request-size: 10MB
 # 自定义配置
 smart-agent:
+  models:
+    default-model: deepseek-v4-flash
+    available:
+      deepseek: deepseek-v4-flash
+      deepseek-chat: deepseek-chat
+      # 如果你有其他模型的Key，可以继续添加
+      # qwen: qwen-plus
   rag:
     # 向量库持久化路径
     vector-store-path: ./data/vectorstore/vector-store.json

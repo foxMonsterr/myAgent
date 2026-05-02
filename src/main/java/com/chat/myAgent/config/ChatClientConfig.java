@@ -101,9 +101,24 @@ public class ChatClientConfig {
     }
 
 
+    @Value("classpath:prompts/full-agent-system.st")
+    private Resource fullAgentSystemPrompt;
+
     /**
-     * 扩展预留：
-     * @Bean("agentChatClient")  → 阶段5: 全能力组合
+     * 全能力 Agent ChatClient
+     *
+     * 整合：记忆 + 工具调用能力
+     * RAG 能力通过 RagAgent 单独处理（因为RAG有专用Advisor）
      */
+    @Bean("fullAgentClient")
+    public ChatClient fullAgentClient(ChatClient.Builder builder, ChatMemory chatMemory) {
+        return builder
+                .defaultSystem(fullAgentSystemPrompt)
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+                )
+                .build();
+    }
+
 
 }
