@@ -10,7 +10,8 @@ import lombok.Data;
 public class ChatRequest {
 
     /**
-     * 会话ID（用于多轮对话隔离，阶段1可选，阶段2必填）
+     * 会话ID（用于多轮对话隔离）
+     * 不传则自动生成新会话
      */
     private String conversationId;
 
@@ -21,8 +22,19 @@ public class ChatRequest {
     private String message;
 
     /**
-     * 指定模型（可选，不传则用默认配置）
-     * 扩展性预留：后续支持动态切换模型
+     * 指定模型（可选，扩展预留）
      */
     private String model;
+
+    /**
+     * 专家角色（可选，用于 expertChat 接口）
+     * 如：Java、Python、前端、数据库、架构设计
+     */
+    private String role;
+
+    /**
+     * 用户水平（可选，配合 role 使用）
+     * 如：beginner(初学者)、intermediate(中级)、advanced(高级)
+     */
+    private String level;
 }

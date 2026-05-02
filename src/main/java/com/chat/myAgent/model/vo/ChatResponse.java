@@ -26,7 +26,12 @@ public class ChatResponse {
     private String model;
 
     /**
-     * Token 使用情况（扩展性预留）
+     * 当前会话历史消息数量（阶段2新增）
+     */
+    private Integer historySize;
+
+    /**
+     * Token 使用情况（扩展预留）
      */
     private TokenUsage tokenUsage;
 
