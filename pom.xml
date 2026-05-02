@@ -56,22 +56,37 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- ==================== 后续阶段预留（暂时注释） ==================== -->
-        <!-- 阶段4: Redis（会话记忆持久化 + 向量库） -->
-        <!--
+        <!--  Redis（会话记忆持久化 + 向量库） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        -->
 
-        <!-- 阶段4: 向量数据库（SimpleVectorStore 先用内存版） -->
-        <!--
+        <!--  向量数据库（SimpleVectorStore 先用内存版） -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.ai</groupId>-->
+<!--            <artifactId>spring-ai-starter-vector-store-redis</artifactId>-->
+<!--        </dependency>-->
+
+        <!-- ==================== 阶段4: RAG 相关 ==================== -->
+        <!-- Spring AI RAG Advisor -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+            <artifactId>spring-ai-advisors-vector-store</artifactId>
         </dependency>
-        -->
+
+        <!-- Spring AI 向量库 - 简单内存版（开发阶段） -->
+        <!-- PDF解析支持（可选，如需支持PDF文档） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-pdf-document-reader</artifactId>
+        </dependency>
+
+        <!-- Markdown解析支持 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-markdown-document-reader</artifactId>
+        </dependency>
 
         <!-- 阶段5: 简单前端页面（Thymeleaf 或直接 static 资源） -->
         <!--

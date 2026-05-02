@@ -3,10 +3,14 @@ package com.chat.myAgent.config;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+
 
 /**
  * ChatClient 核心配置
@@ -21,6 +25,9 @@ public class ChatClientConfig {
 
     @Value("classpath:prompts/chat-system.st")
     private Resource chatSystemPrompt;
+
+    @Value("classpath:prompts/rag-system.st")
+    private Resource ragSystemPrompt;
 
     /**
      * 基础 ChatClient（无记忆，保持阶段1兼容）
@@ -66,11 +73,37 @@ public class ChatClientConfig {
                 .build();
     }
 
+    /**
+     * RAG 知识库问答 ChatClient
+     *
+     * 设计要点：
+     * - 使用 QuestionAnswerAdvisor 自动完成 "检索→注入Prompt→回答" 全流程
+     * - 结合 Memory 实现知识库的多轮追问
+     */
+    @Bean("ragChatClient")
+    public ChatClient ragChatClient(ChatClient.Builder builder,
+                                    ChatMemory chatMemory,
+                                    VectorStore vectorStore) {
+        return builder
+                .defaultSystem(ragSystemPrompt)
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        QuestionAnswerAdvisor.builder(vectorStore)
+                                .searchRequest(
+                                        SearchRequest.builder()
+                                                .topK(5)
+                                                .similarityThreshold(0.4)
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+    }
+
 
     /**
      * 扩展预留：
-     * @Bean("toolChatClient")   → 阶段3: 带工具调用
-     * @Bean("ragChatClient")    → 阶段4: 带 RAG 检索
      * @Bean("agentChatClient")  → 阶段5: 全能力组合
      */
+
 }

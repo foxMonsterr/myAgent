@@ -10,6 +10,26 @@ spring:
           timeout: 60s
           # 禁用 thinking mode，避免 reasoning_content 错误
           enable-thinking: false
+          # Embedding 模型配置
+          embedding:
+            options:
+              model: deepseek-v4-flash  # DeepSeek是否支持embedding需确认，见下方备选方案
+    # 文件上传配置
+    servlet:
+      multipart:
+        max-file-size: 10MB
+        max-request-size: 10MB
+# 自定义配置
+smart-agent:
+  rag:
+    # 向量库持久化路径
+    vector-store-path: ./data/vectorstore/vector-store.json
+    # 文本切片配置
+    chunk-size: 100          # 每个片段的最大Token数
+    chunk-overlap: 30       # 片段之间的重叠Token数
+    # 检索配置
+    top-k: 5                 # 返回最相关的片段数量
+    similarity-threshold: 0.4  # 相似度阈值（低于此值不返回）
 
 # 开发环境开启更详细的日志
 logging:

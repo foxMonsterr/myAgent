@@ -27,6 +27,6 @@ public class MemoryConfig {
         return MessageWindowChatMemory.builder()
                 .chatMemoryRepository(new InMemoryChatMemoryRepository())
                 .maxMessages(100)  // 保留最近100条消息
-                .buld();
+                .build();
     }
 }
