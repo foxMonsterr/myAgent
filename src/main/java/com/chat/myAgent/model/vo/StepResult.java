@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * 单步执行结果
+ * 任务规划中的单步结果
  */
 @Data
 @Builder
@@ -26,7 +26,7 @@ public class StepResult {
     private String toolUsed;
 
     /**
-     * 执行结果
+     * 步骤输出结果
      */
     private String result;
 
@@ -36,7 +36,7 @@ public class StepResult {
     private boolean success;
 
     /**
-     * 耗时（毫秒）
+     * 单步耗时
      */
     private long timeMs;
 }

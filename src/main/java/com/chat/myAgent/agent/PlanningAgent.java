@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 任务规划 Agent（阶段5核心）
+ * 任务规划 Agent
  *
  * 核心能力：
  * 1. 分析用户的复杂需求
@@ -69,6 +69,7 @@ public class PlanningAgent {
      * 规划并执行任务
      */
     public PlanningResponse planAndExecute(String task, String conversationId, boolean autoExecute) {
+        // 处理会话 ID
         final String resolvedConversationId = resolveConversationId(conversationId);
         long startTime = System.currentTimeMillis();
 

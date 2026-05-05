@@ -2,6 +2,9 @@ package com.chat.myAgent.controller;
 
 import com.chat.myAgent.agent.ChatAgent;
 import com.chat.myAgent.common.result.R;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
  *
  * 用于管理对话会话：查看历史、清除记忆等
  */
+@Tag(name = "会话管理", description = "查看会话历史、清除会话记忆")
 @RestController
 @RequestMapping("/api/v1/session")
 @RequiredArgsConstructor
@@ -29,8 +33,9 @@ public class SessionController {
      *
      * 返回该会话的所有历史消息列表
      */
+    @Operation(summary = "获取会话历史消息")
     @GetMapping("/{conversationId}/history")
-    public R<List<Map<String, String>>> getHistory(@PathVariable String conversationId) {
+    public R<List<Map<String, String>>> getHistory(@Parameter(description = "会话ID", required = true) @PathVariable String conversationId) {
         List<Message> messages = chatAgent.getHistory(conversationId);
 
         // 转换为前端友好的格式
@@ -52,8 +57,9 @@ public class SessionController {
      *
      * 清除后，该 conversationId 的对话将从头开始
      */
+    @Operation(summary = "清除会话记忆", description = "清除后该conversationId的对话将从头开始")
     @DeleteMapping("/{conversationId}")
-    public R<String> clearSession(@PathVariable String conversationId) {
+    public R<String> clearSession(@Parameter(description = "会话ID", required = true) @PathVariable String conversationId) {
         chatAgent.clearMemory(conversationId);
         return R.ok("会话 [" + conversationId + "] 已清除");
     }

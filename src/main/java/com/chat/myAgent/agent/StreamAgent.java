@@ -90,6 +90,10 @@ public class StreamAgent {
                 .content();
     }
 
+
+    /**
+     * 会话ID 为空时自动生成
+     */
     private String resolveConversationId(String conversationId) {
         if (conversationId == null || conversationId.isBlank()) {
             return "stream-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);

@@ -12,10 +12,6 @@ import org.springframework.stereotype.Component;
  * 利用大模型自身的多语言能力实现翻译
  * 这是一个"AI调用AI"的经典模式——主Agent调用翻译工具，翻译工具内部再调用模型
  *
- * 设计说明：
- * - 没有使用第三方翻译API（如百度翻译、谷歌翻译）
- * - 直接利用大模型的翻译能力，简化依赖
- * - 如果后续需要更高质量的翻译，可以替换为专业翻译API
  */
 @Component
 public class TranslateTool {

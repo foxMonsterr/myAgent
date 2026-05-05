@@ -26,7 +26,7 @@ public class ChatResponse {
     private String model;
 
     /**
-     * 当前会话历史消息数量（阶段2新增）
+     * 当前会话历史消息数量
      */
     private Integer historySize;
 

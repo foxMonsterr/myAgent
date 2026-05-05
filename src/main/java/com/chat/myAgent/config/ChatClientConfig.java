@@ -12,14 +12,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 
 
-/**
- * ChatClient 核心配置
- *
- * 设计说明：
- * - baseChatClient：无记忆的简单对话（保留阶段1功能）
- * - memoryChatClient：带多轮记忆的对话客户端（阶段2核心）
- * - 后续阶段继续扩展 toolChatClient / ragChatClient
- */
 @Configuration
 public class ChatClientConfig {
 
@@ -29,8 +21,11 @@ public class ChatClientConfig {
     @Value("classpath:prompts/rag-system.st")
     private Resource ragSystemPrompt;
 
+    @Value("classpath:prompts/full-agent-system.st")
+    private Resource fullAgentSystemPrompt;
+
     /**
-     * 基础 ChatClient（无记忆，保持阶段1兼容）
+     * 基础 ChatClient无记忆
      */
     @Bean("baseChatClient")
     public ChatClient baseChatClient(ChatClient.Builder builder) {
@@ -40,7 +35,7 @@ public class ChatClientConfig {
     }
 
     /**
-     * 带记忆的 ChatClient（阶段2核心）
+     * 带记忆的 ChatClient
      *
      * 设计要点：
      * - MessageChatMemoryAdvisor 自动在每次请求时加载历史消息，响应后保存新消息
@@ -87,22 +82,20 @@ public class ChatClientConfig {
         return builder
                 .defaultSystem(ragSystemPrompt)
                 .defaultAdvisors(
+                        //记忆管理
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        //RAG检索
                         QuestionAnswerAdvisor.builder(vectorStore)
                                 .searchRequest(
                                         SearchRequest.builder()
                                                 .topK(5)
-                                                .similarityThreshold(0.4)
+                                                .similarityThreshold(0.5)
                                                 .build()
                                 )
                                 .build()
                 )
                 .build();
     }
-
-
-    @Value("classpath:prompts/full-agent-system.st")
-    private Resource fullAgentSystemPrompt;
 
     /**
      * 全能力 Agent ChatClient
@@ -119,6 +112,5 @@ public class ChatClientConfig {
                 )
                 .build();
     }
-
 
 }

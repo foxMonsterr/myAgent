@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * 向量库配置
  *
  * 设计说明：
- * - 阶段4使用 SimpleVectorStore（基于内存+文件持久化）
+ * - 使用 SimpleVectorStore（基于内存+文件持久化）
  * - SimpleVectorStore 将向量数据保存为 JSON 文件，重启后可恢复
  * - 如果后续需要更强大的向量库，可以切换为 Redis Vector / Milvus / PGVector
  *

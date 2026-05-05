@@ -23,17 +23,17 @@ public class PlanningResponse {
     private String taskSummary;
 
     /**
-     * 是否进行了任务规划（简单问题直接回答则为false）
+     * 是否发生任务规划
      */
     private boolean planned;
 
     /**
-     * 如果未规划，直接回答的内容
+     * 简单问题的直接回答
      */
     private String directAnswer;
 
     /**
-     * 执行步骤及结果
+     * 规划步骤列表
      */
     private List<StepResult> steps;
 
@@ -43,7 +43,7 @@ public class PlanningResponse {
     private String finalAnswer;
 
     /**
-     * 总耗时（毫秒）
+     * 总耗时
      */
     private long totalTimeMs;
 }

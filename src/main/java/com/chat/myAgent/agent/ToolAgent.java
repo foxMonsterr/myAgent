@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 工具调用 Agent（阶段3核心）
+ * 工具调用 Agent
  *
  * 核心能力：
  * 1. 大模型自主决定是否调用工具

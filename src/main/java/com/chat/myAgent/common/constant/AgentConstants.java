@@ -10,7 +10,6 @@ public class AgentConstants {
     // ==================== 模型相关 ====================
     public static final String DEFAULT_MODEL = "deepseek-v4-flash";
     public static final String QWEN_MODEL = "qwen-plus";
-    public static final String QWEN_TURBO = "qwen-turbo";
 
     // ==================== 会话相关 ====================
     public static final int MAX_MEMORY_SIZE = 20;

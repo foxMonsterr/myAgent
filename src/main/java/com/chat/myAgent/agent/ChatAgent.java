@@ -14,15 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 基础对话 Agent（阶段2升级版）
- *
- * 新增能力：
- * 1. 多轮对话记忆（自动加载/保存历史消息）
- * 2. 会话隔离（不同 conversationId 独立记忆）
- * 3. 动态角色切换（通过 Prompt 模板实现）
- * 4. 会话管理（查看历史、清除记忆）
- */
+
 @Slf4j
 @Component
 public class ChatAgent {
@@ -44,7 +36,7 @@ public class ChatAgent {
     }
 
     /**
-     * 基础对话（无记忆，保持阶段1兼容）
+     * 基础对话（无记忆）
      */
     public ChatResponse simpleChat(ChatRequest request) {
         String conversationId = resolveConversationId(request.getConversationId());
@@ -64,13 +56,7 @@ public class ChatAgent {
     }
 
     /**
-     * 多轮对话（带记忆，阶段2核心功能）
-     *
-     * 工作流程：
-     * 1. MessageChatMemoryAdvisor 根据 conversationId 加载历史消息
-     * 2. 将历史消息 + 当前消息一起发送给大模型
-     * 3. 收到响应后，自动将本轮对话（用户消息+AI回复）保存到 Memory
-     * 4. 下次同一 conversationId 请求时，自动携带之前的历史
+     * 多轮对话（带记忆）
      */
     public ChatResponse chat(ChatRequest request) {
         String conversationId = resolveConversationId(request.getConversationId());

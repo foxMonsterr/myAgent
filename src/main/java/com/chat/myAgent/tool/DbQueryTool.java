@@ -12,10 +12,6 @@ import java.util.*;
  * 使用内存数据模拟数据库查询
  * 模拟一个简单的"公司员工管理系统"数据
  *
- * 设计说明：
- * - 阶段3使用内存Map模拟，不引入真实数据库依赖
- * - 如果后续需要真实数据库，可以替换为 JdbcTemplate 或 JPA
- * - 目的是演示 AI 如何通过工具查询"外部数据"
  */
 @Component
 public class DbQueryTool {

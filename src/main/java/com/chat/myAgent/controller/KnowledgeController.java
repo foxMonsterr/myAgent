@@ -7,6 +7,9 @@ import com.chat.myAgent.model.vo.DocumentVO;
 import com.chat.myAgent.model.vo.KnowledgeResponse;
 import com.chat.myAgent.rag.DocumentService;
 import com.chat.myAgent.rag.DocumentService.DocumentMeta;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
  * 2. RAG问答：基于知识库回答问题
  * 3. 调试工具：纯检索（不生成回答）
  */
+@Tag(name = "知识库管理", description = "文档上传/加载/删除 + RAG知识库问答 + 检索调试")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/knowledge")
@@ -43,8 +47,9 @@ public class KnowledgeController {
      * 支持 .txt 和 .md 格式
      * 文件上传后自动进行切片、向量化、存储
      */
+    @Operation(summary = "上传文档并入库", description = "支持.txt和.md格式，文件上传后自动切片、向量化、存储")
     @PostMapping("/upload")
-    public R<DocumentVO> uploadDocument(@RequestParam("file") MultipartFile file) {
+    public R<DocumentVO> uploadDocument(@Parameter(description = "上传的文件（.txt/.md）", required = true) @RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
                 return R.paramError("文件不能为空");
@@ -76,9 +81,10 @@ public class KnowledgeController {
      * 将指定目录下的所有 txt/md 文件批量入库
      * 默认目录：src/main/resources/knowledge/
      */
+    @Operation(summary = "批量加载知识库目录", description = "将指定目录下的所有txt/md文件批量入库")
     @PostMapping("/load-directory")
     public R<List<DocumentVO>> loadDirectory(
-            @RequestParam(value = "path", defaultValue = "src/main/resources/knowledge/") String dirPath) {
+            @Parameter(description = "知识库目录路径") @RequestParam(value = "path", defaultValue = "src/main/resources/knowledge/") String dirPath) {
         List<DocumentMeta> metas = documentService.indexKnowledgeDirectory(dirPath);
 
         List<DocumentVO> vos = metas.stream()
@@ -98,6 +104,7 @@ public class KnowledgeController {
      * 获取已入库文档列表
      * GET /api/v1/knowledge/documents
      */
+    @Operation(summary = "获取已入库文档列表")
     @GetMapping("/documents")
     public R<List<DocumentVO>> listDocuments() {
         List<DocumentMeta> metas = documentService.listDocuments();
@@ -119,6 +126,7 @@ public class KnowledgeController {
      * 删除指定文档
      * DELETE /api/v1/knowledge/documents/{fileName}
      */
+    @Operation(summary = "删除指定文档")
     @DeleteMapping("/documents/{fileName}")
     public R<String> deleteDocument(@PathVariable String fileName) {
         boolean success = documentService.deleteDocument(fileName);
@@ -144,6 +152,7 @@ public class KnowledgeController {
      *   "conversationId": "rag-001"
      * }
      */
+    @Operation(summary = "知识库问答（自动RAG）", description = "使用QuestionAnswerAdvisor自动完成检索和回答，支持多轮追问")
     @PostMapping("/ask")
     public R<KnowledgeResponse> ask(@Valid @RequestBody KnowledgeRequest request) {
         KnowledgeResponse response = ragAgent.ask(
@@ -159,6 +168,7 @@ public class KnowledgeController {
      *
      * 手动控制检索和拼接过程，可以看到更清晰的RAG流程
      */
+    @Operation(summary = "知识库问答（手动RAG）", description = "手动控制检索和拼接过程，可以看到更清晰的RAG流程")
     @PostMapping("/ask/manual")
     public R<KnowledgeResponse> askManual(@Valid @RequestBody KnowledgeRequest request) {
         KnowledgeResponse response = ragAgent.askManual(
@@ -176,8 +186,9 @@ public class KnowledgeController {
      *
      * 用于调试：查看某个问题能检索到哪些文档片段
      */
+    @Operation(summary = "纯检索（调试用）", description = "不生成回答，只返回检索到的文档片段，用于调试检索效果")
     @GetMapping("/search")
-    public R<String> search(@RequestParam String query) {
+    public R<String> search(@Parameter(description = "检索关键词", required = true) @RequestParam String query) {
         String result = ragAgent.searchOnly(query);
         return R.ok(result);
     }
@@ -186,6 +197,7 @@ public class KnowledgeController {
      * 知识库状态
      * GET /api/v1/knowledge/status
      */
+    @Operation(summary = "知识库状态")
     @GetMapping("/status")
     public R<Map<String, Object>> status() {
         List<DocumentMeta> docs = documentService.listDocuments();

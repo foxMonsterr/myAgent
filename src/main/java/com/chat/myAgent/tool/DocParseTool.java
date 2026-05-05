@@ -16,10 +16,6 @@ import java.nio.file.Paths;
  * 读取本地文件内容，支持 txt、md 格式
  * 文件默认存放路径：src/main/resources/docs/
  *
- * 设计说明：
- * - 阶段3使用简单的文件读取
- * - 阶段4 RAG 中会升级为 Spring AI DocumentReader（支持PDF、自动切片）
- * - 当前限制文件大小，避免超大文件导致 Token 超限
  */
 @Component
 public class DocParseTool {

@@ -45,7 +45,7 @@ public class RetrievalService {
      * 相似度检索（自定义参数）
      *
      * @param query              用户问题
-     * @param topK               返回最相关的K个片段
+     * @param topK              0 返回最相关的K个片段
      * @param similarityThreshold 相似度阈值（0-1，低于此值不返回）
      */
     public List<Document> retrieve(String query, int topK, double similarityThreshold) {

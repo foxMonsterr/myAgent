@@ -1,12 +1,51 @@
 spring:
   ai:
     openai:
+      base-url: ${AI_BASE_URL}
+      api-key: ${DEEEPSEEK_API_KEY}
       chat:
         options:
-          model: qwen-plus
-          temperature: 0.3
+          model: deepseek-v4-flash
+          temperature: 0.6
+          max-tokens: 4096
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/smart_agent?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8mb4
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root123}
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+smart-agent:
+  jwt:
+    secret: ${JWT_SECRET:smartagent-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+    expiration-hours: 24
+  rate-limit:
+    max-requests-per-minute: 60
+
+# DashScope Embedding 配置（阿里云通义千问）
+dashscope:
+  api-key: ${DASHSCOPE_API_KEY:your-dashscope-api-key-here}
+  base-url: https://dashscope.aliyuncs.com/compatible-mode
+  embedding-model: text-embedding-v4
 
 logging:
   level:
-    com.smartagent: info
+    com.chat.myAgent: info
     org.springframework.ai: warn
+    org.springframework.security: warn
