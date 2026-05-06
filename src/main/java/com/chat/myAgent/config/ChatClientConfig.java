@@ -2,18 +2,48 @@ package com.chat.myAgent.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 
-
+/**
+ * ChatClient 配置
+ *
+ * 说明：
+ * - 主模型使用 DeepSeek
+ * - 兜底模型使用 Qwen3.6-Plus
+ * - 两者通过独立的 OpenAiApi + OpenAiChatModel + ChatClient 进行隔离，
+ *   这样失败切换时不会复用同一个底层模型配置。
+ */
 @Configuration
 public class ChatClientConfig {
+
+    @Value("${smart-agent.models.default-model:deepseek-v4-flash}")
+    private String primaryModelName;
+
+    @Value("${smart-agent.models.fallback-model:qwen3.6-plus}")
+    private String fallbackModelName;
+
+    @Value("${deepseek.api-base-url:${spring.ai.openai.base-url:https://api.deepseek.com}}")
+    private String deepseekBaseUrl;
+
+    @Value("${deepseek.api-key:${spring.ai.openai.api-key:}}")
+    private String deepseekApiKey;
+
+    @Value("${qwen.api-base-url:https://dashscope.aliyuncs.com/compatible-mode/v1}")
+    private String qwenBaseUrl;
+
+    @Value("${qwen.api-key:${QWEN_API_KEY:}}")
+    private String qwenApiKey;
 
     @Value("classpath:prompts/chat-system.st")
     private Resource chatSystemPrompt;
@@ -24,12 +54,59 @@ public class ChatClientConfig {
     @Value("classpath:prompts/full-agent-system.st")
     private Resource fullAgentSystemPrompt;
 
+    @Bean("primaryOpenAiApi")
+    public OpenAiApi primaryOpenAiApi() {
+        return OpenAiApi.builder()
+                .baseUrl(deepseekBaseUrl)
+                .apiKey(deepseekApiKey)
+                .build();
+    }
+
+    @Bean("fallbackOpenAiApi")
+    public OpenAiApi fallbackOpenAiApi() {
+        return OpenAiApi.builder()
+                .baseUrl(qwenBaseUrl)
+                .apiKey(qwenApiKey)
+                .build();
+    }
+
+    @Bean("primaryChatModel")
+    public OpenAiChatModel primaryChatModel(@Qualifier("primaryOpenAiApi") OpenAiApi openAiApi) {
+        return OpenAiChatModel.builder()
+                .openAiApi(openAiApi)
+                .defaultOptions(OpenAiChatOptions.builder()
+                        .model(primaryModelName)
+                        .temperature(0.7)
+                        .maxTokens(4096)
+                        .build())
+                .build();
+    }
+
+    @Bean("fallbackChatModel")
+    public OpenAiChatModel fallbackChatModel(@Qualifier("fallbackOpenAiApi") OpenAiApi openAiApi) {
+        return OpenAiChatModel.builder()
+                .openAiApi(openAiApi)
+                .defaultOptions(OpenAiChatOptions.builder()
+                        .model(fallbackModelName)
+                        .temperature(0.7)
+                        .maxTokens(4096)
+                        .build())
+                .build();
+    }
+
+    @Bean("fallbackChatClient")
+    public ChatClient fallbackChatClient(@Qualifier("fallbackChatModel") OpenAiChatModel fallbackChatModel) {
+        return ChatClient.builder(fallbackChatModel)
+                .defaultSystem("你是一个智能助手，名叫 SmartAgent。你的回答简洁、准确、有帮助。")
+                .build();
+    }
+
     /**
      * 基础 ChatClient无记忆
      */
     @Bean("baseChatClient")
-    public ChatClient baseChatClient(ChatClient.Builder builder) {
-        return builder
+    public ChatClient baseChatClient(@Qualifier("primaryChatModel") OpenAiChatModel primaryChatModel) {
+        return ChatClient.builder(primaryChatModel)
                 .defaultSystem("你是一个智能助手，名叫 SmartAgent。你的回答简洁、准确、有帮助。")
                 .build();
     }
@@ -43,8 +120,9 @@ public class ChatClientConfig {
      * - 系统提示词从外部 .st 文件加载，解耦代码与提示词
      */
     @Bean("memoryChatClient")
-    public ChatClient memoryChatClient(ChatClient.Builder builder, ChatMemory chatMemory) {
-        return builder
+    public ChatClient memoryChatClient(@Qualifier("primaryChatModel") OpenAiChatModel primaryChatModel,
+                                       ChatMemory chatMemory) {
+        return ChatClient.builder(primaryChatModel)
                 .defaultSystem(chatSystemPrompt)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory)
@@ -58,9 +136,10 @@ public class ChatClientConfig {
      * 如果 ToolAgent 的 chatWithMemory 方法不生效，使用这个 Bean
      */
     @Bean("toolChatClient")
-    public ChatClient toolChatClient(ChatClient.Builder builder, ChatMemory chatMemory,
+    public ChatClient toolChatClient(@Qualifier("primaryChatModel") OpenAiChatModel primaryChatModel,
+                                     ChatMemory chatMemory,
                                      @Value("classpath:prompts/tool-agent-system.st") Resource toolPrompt) {
-        return builder
+        return ChatClient.builder(primaryChatModel)
                 .defaultSystem(toolPrompt)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
@@ -76,10 +155,10 @@ public class ChatClientConfig {
      * - 结合 Memory 实现知识库的多轮追问
      */
     @Bean("ragChatClient")
-    public ChatClient ragChatClient(ChatClient.Builder builder,
+    public ChatClient ragChatClient(@Qualifier("primaryChatModel") OpenAiChatModel primaryChatModel,
                                     ChatMemory chatMemory,
                                     VectorStore vectorStore) {
-        return builder
+        return ChatClient.builder(primaryChatModel)
                 .defaultSystem(ragSystemPrompt)
                 .defaultAdvisors(
                         //记忆管理
@@ -104,8 +183,9 @@ public class ChatClientConfig {
      * RAG 能力通过 RagAgent 单独处理（因为RAG有专用Advisor）
      */
     @Bean("fullAgentClient")
-    public ChatClient fullAgentClient(ChatClient.Builder builder, ChatMemory chatMemory) {
-        return builder
+    public ChatClient fullAgentClient(@Qualifier("primaryChatModel") OpenAiChatModel primaryChatModel,
+                                      ChatMemory chatMemory) {
+        return ChatClient.builder(primaryChatModel)
                 .defaultSystem(fullAgentSystemPrompt)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build()

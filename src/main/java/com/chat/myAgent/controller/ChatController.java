@@ -70,6 +70,18 @@ public class ChatController {
     }
 
     /**
+     * 多轮记忆对话（支持思考模式）
+     * POST /api/v1/chat/memory/thinking
+     */
+    @Operation(summary = "多轮记忆对话（支持思考模式）")
+    @PostMapping("/memory/thinking")
+    public R<ChatResponse> memoryChatThinking(@Valid @RequestBody ChatRequest request,
+                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "true") boolean thinkingMode) {
+        ChatResponse response = chatAgent.chat(request, thinkingMode);
+        return R.ok(response);
+    }
+
+    /**
      * 专家角色对话
      * POST /api/v1/chat/expert
      *
@@ -92,6 +104,21 @@ public class ChatController {
         String level = request.getLevel() != null ? request.getLevel() : "intermediate";
 
         ChatResponse response = chatAgent.expertChat(request, role, level);
+        return R.ok(response);
+    }
+
+    /**
+     * 专家角色对话（支持思考模式）
+     * POST /api/v1/chat/expert/thinking
+     */
+    @Operation(summary = "专家角色对话（支持思考模式）")
+    @PostMapping("/expert/thinking")
+    public R<ChatResponse> expertChatThinking(@Valid @RequestBody ChatRequest request,
+                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "true") boolean thinkingMode) {
+        String role = request.getRole() != null ? request.getRole() : "通用技术";
+        String level = request.getLevel() != null ? request.getLevel() : "intermediate";
+
+        ChatResponse response = chatAgent.expertChat(request, role, level, thinkingMode);
         return R.ok(response);
     }
 

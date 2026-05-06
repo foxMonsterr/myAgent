@@ -1,13 +1,23 @@
 spring:
   ai:
     openai:
+      qwen:
+        api-base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+        api-key: ${QWEN_API_KEY:sk-af41394721784ff4974ea0f5d0b97864}
+        chat:
+          options:
+              model: qwen3.6-plus
+
       base-url: https://api.deepseek.com
-      api-key: ${DEEPSEEK_API_KEY}
+      api-key: ${DEEPSEEK_API_KEY:sk-4862cf031c274f5a838c7db10ba6cbf1}
       chat:
         options:
           model: deepseek-v4-flash
           temperature: 0.7
           max-tokens: 4096
+      # 添加超时配置
+      timeout: 60s
+      connection-timeout: 30s
 
   # H2 内存数据库（开发阶段，不需要安装MySQL）
   datasource:
@@ -64,8 +74,8 @@ smart-agent:
 
 # DashScope Embedding 配置（阿里云通义千问）
 dashscope:
-  api-key: ${DASHSCOPE_API_KEY:your-dashscope-api-key-here}
-  base-url: https://dashscope.aliyuncs.com/compatible-mode
+  api-key: ${QWEN_API_KEY:sk-af41394721784ff4974ea0f5d0b97864}
+  base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
   embedding-model: text-embedding-v4
 
 logging:

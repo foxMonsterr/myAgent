@@ -579,7 +579,7 @@ spring:
   ai:
     openai:
       base-url: ${AI_BASE_URL:https://api.deepseek.com}
-      api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
+      api-key: ${Deepseek_API_KEY:your-api-key-here}
       chat:
         options:
           model: ${AI_MODEL:deepseek-v4-flash}

@@ -2,7 +2,7 @@ spring:
   ai:
     openai:
       base-url: ${AI_BASE_URL}
-      api-key: ${DEEEPSEEK_API_KEY}
+      api-key: ${DEEPSEEEK_API_KEY}
       chat:
         options:
           model: deepseek-v4-flash
@@ -40,7 +40,7 @@ smart-agent:
 
 # DashScope Embedding 配置（阿里云通义千问）
 dashscope:
-  api-key: ${DASHSCOPE_API_KEY:your-dashscope-api-key-here}
+  api-key: ${QWEN_API_KEY:your-dashscope-api-key-here}
   base-url: https://dashscope.aliyuncs.com/compatible-mode
   embedding-model: text-embedding-v4
 

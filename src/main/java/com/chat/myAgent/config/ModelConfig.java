@@ -10,7 +10,10 @@ import java.util.Map;
 /**
  * 多模型配置
  *
- * 支持在配置文件中预定义多个模型，接口调用时动态切换
+ * 说明：
+ * - defaultModel：默认主模型
+ * - fallbackModel：主模型失败时的兜底模型
+ * - available：统一维护模型别名到真实模型名的映射
  */
 @Data
 @Configuration
@@ -18,9 +21,14 @@ import java.util.Map;
 public class ModelConfig {
 
     /**
-     * 默认模型名称
+     * 默认主模型
      */
     private String defaultModel = "deepseek-v4-flash";
+
+    /**
+     * 兜底模型
+     */
+    private String fallbackModel = "qwen3.6-plus";
 
     /**
      * 可用模型列表
@@ -37,5 +45,19 @@ public class ModelConfig {
             return defaultModel;
         }
         return available.getOrDefault(alias, alias);
+    }
+
+    /**
+     * 获取主模型名称
+     */
+    public String getPrimaryModel() {
+        return resolveModel(defaultModel);
+    }
+
+    /**
+     * 获取兜底模型名称
+     */
+    public String getFallbackModelName() {
+        return resolveModel(fallbackModel);
     }
 }

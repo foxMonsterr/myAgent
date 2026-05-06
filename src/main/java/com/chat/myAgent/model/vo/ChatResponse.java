@@ -21,6 +21,11 @@ public class ChatResponse {
     private String reply;
 
     /**
+     * 思考过程（如果模型返回了 reasoning/thinking 内容）
+     */
+    private String thinking;
+
+    /**
      * 使用的模型名称
      */
     private String model;

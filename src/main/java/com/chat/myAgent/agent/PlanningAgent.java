@@ -85,7 +85,6 @@ public class PlanningAgent {
         log.debug("规划结果 JSON: {}", planJson);
 
         try {
-            // 清理可能的 markdown 代码块包裹
             planJson = cleanJsonResponse(planJson);
             JsonNode planNode = objectMapper.readTree(planJson);
 
@@ -109,7 +108,6 @@ public class PlanningAgent {
             JsonNode stepsNode = planNode.path("steps");
 
             if (!autoExecute) {
-                // 只返回规划，不执行
                 List<StepResult> planSteps = new ArrayList<>();
                 for (JsonNode step : stepsNode) {
                     planSteps.add(StepResult.builder()
@@ -127,12 +125,11 @@ public class PlanningAgent {
                         .taskSummary(taskSummary)
                         .planned(true)
                         .steps(planSteps)
-                        .finalAnswer("规划完成，未自动执行。共 " + planSteps.size() + " 个步骤。")
+                        .finalAnswer("仅返回规划结果，共 " + planSteps.size() + " 个步骤。")
                         .totalTimeMs(totalTime)
                         .build();
             }
 
-            // 自动执行每个步骤
             List<StepResult> executedSteps = executeSteps(stepsNode, resolvedConversationId);
 
             // 汇总所有结果，生成最终回答
