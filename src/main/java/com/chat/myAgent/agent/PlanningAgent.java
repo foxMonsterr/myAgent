@@ -1,7 +1,9 @@
 package com.chat.myAgent.agent;
 
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.model.vo.PlanningResponse;
 import com.chat.myAgent.model.vo.StepResult;
+import com.chat.myAgent.service.AuditService;
 import com.chat.myAgent.tool.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +45,7 @@ public class PlanningAgent {
     private final TranslateTool translateTool;
     private final DocParseTool docParseTool;
     private final DbQueryTool dbQueryTool;
+    private final AuditService auditService;
 
     @Value("classpath:prompts/planning-system.st")
     private Resource planningSystemPrompt;
@@ -54,7 +57,8 @@ public class PlanningAgent {
             CalculatorTool calculatorTool,
             TranslateTool translateTool,
             DocParseTool docParseTool,
-            DbQueryTool dbQueryTool) {
+            DbQueryTool dbQueryTool,
+            AuditService auditService) {
         this.baseChatClient = baseChatClient;
         this.fullAgentClient = fullAgentClient;
         this.objectMapper = new ObjectMapper();
@@ -63,6 +67,7 @@ public class PlanningAgent {
         this.translateTool = translateTool;
         this.docParseTool = docParseTool;
         this.dbQueryTool = dbQueryTool;
+        this.auditService = auditService;
     }
 
     /**
@@ -95,12 +100,15 @@ public class PlanningAgent {
                 String directAnswer = planNode.path("directAnswer").asText("无法解析回答");
                 long totalTime = System.currentTimeMillis() - startTime;
 
-                return PlanningResponse.builder()
+                PlanningResponse response = PlanningResponse.builder()
                         .conversationId(resolvedConversationId)
                         .planned(false)
                         .directAnswer(directAnswer)
                         .totalTimeMs(totalTime)
+                        .traceId(TraceContext.getTraceId())
                         .build();
+                auditService.saveAgentInvocation(resolvedConversationId, "planning-direct", "deepseek-v4-flash", task, response.getDirectAnswer(), null, "SUCCESS", totalTime);
+                return response;
             }
 
             // 复杂任务，需要规划
@@ -120,14 +128,17 @@ public class PlanningAgent {
                 }
 
                 long totalTime = System.currentTimeMillis() - startTime;
-                return PlanningResponse.builder()
+                PlanningResponse response = PlanningResponse.builder()
                         .conversationId(resolvedConversationId)
                         .taskSummary(taskSummary)
                         .planned(true)
                         .steps(planSteps)
                         .finalAnswer("仅返回规划结果，共 " + planSteps.size() + " 个步骤。")
                         .totalTimeMs(totalTime)
+                        .traceId(TraceContext.getTraceId())
                         .build();
+                auditService.saveAgentInvocation(resolvedConversationId, "planning-only", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+                return response;
             }
 
             List<StepResult> executedSteps = executeSteps(stepsNode, resolvedConversationId);
@@ -137,14 +148,17 @@ public class PlanningAgent {
 
             long totalTime = System.currentTimeMillis() - startTime;
 
-            return PlanningResponse.builder()
+            PlanningResponse response = PlanningResponse.builder()
                     .conversationId(resolvedConversationId)
                     .taskSummary(taskSummary)
                     .planned(true)
                     .steps(executedSteps)
                     .finalAnswer(finalAnswer)
                     .totalTimeMs(totalTime)
+                    .traceId(TraceContext.getTraceId())
                     .build();
+            auditService.saveAgentInvocation(resolvedConversationId, "planning-execute", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+            return response;
 
         } catch (Exception e) {
             log.error("任务规划解析失败，回退到直接执行模式", e);
@@ -309,13 +323,16 @@ public class PlanningAgent {
 
         long totalTime = System.currentTimeMillis() - startTime;
 
-        return PlanningResponse.builder()
+        PlanningResponse response = PlanningResponse.builder()
                 .conversationId(conversationId)
                 .planned(false)
                 .directAnswer(reply)
                 .finalAnswer(reply)
                 .totalTimeMs(totalTime)
+                .traceId(TraceContext.getTraceId())
                 .build();
+        auditService.saveAgentInvocation(conversationId, "planning-fallback", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+        return response;
     }
 
     /**

@@ -51,9 +51,14 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res = await login(form)
-    userStore.setAuth(res)
+    const data = res.data
+    if (!data) {
+      ElMessage.error('登录失败，返回数据为空')
+      return
+    }
+    userStore.setAuth(data)
     ElMessage.success('登录成功')
-    router.push('/dashboard')
+    await router.push('/home')
   } finally {
     loading.value = false
   }

@@ -2,6 +2,7 @@ package com.chat.myAgent.controller;
 
 import com.chat.myAgent.auth.JwtProperties;
 import com.chat.myAgent.auth.JwtTokenProvider;
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.common.result.R;
 import com.chat.myAgent.model.dto.LoginRequest;
 import com.chat.myAgent.model.dto.RegisterRequest;
@@ -57,7 +58,7 @@ public class AuthController {
         user.setEnabled(true);
 
         userRepository.save(user);
-        log.info("新用户注册: {}", user.getUsername());
+        log.info("新用户注册: {}, traceId={}", user.getUsername(), TraceContext.getTraceId());
 
         // 自动登录，返回 Token
         String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
@@ -96,7 +97,7 @@ public class AuthController {
         // 生成 Token
         String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
 
-        log.info("用户登录: {}", user.getUsername());
+        log.info("用户登录: {}, traceId={}", user.getUsername(), TraceContext.getTraceId());
 
         return R.ok("登录成功", AuthResponse.builder()
                 .token(token)

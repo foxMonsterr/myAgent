@@ -36,4 +36,9 @@ public class KnowledgeResponse {
      * 使用的模型
      */
     private String model;
+
+    /**
+     * 请求追踪ID
+     */
+    private String traceId;
 }

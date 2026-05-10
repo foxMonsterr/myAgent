@@ -26,6 +26,11 @@ public class ChatResponse {
     private String thinking;
 
     /**
+     * 本次响应关联的 traceId
+     */
+    private String traceId;
+
+    /**
      * 使用的模型名称
      */
     private String model;

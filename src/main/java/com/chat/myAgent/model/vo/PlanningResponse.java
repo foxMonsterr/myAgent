@@ -46,4 +46,9 @@ public class PlanningResponse {
      * 总耗时
      */
     private long totalTimeMs;
+
+    /**
+     * 本次响应关联的 traceId
+     */
+    private String traceId;
 }

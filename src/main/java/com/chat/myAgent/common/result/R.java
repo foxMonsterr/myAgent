@@ -1,5 +1,6 @@
 package com.chat.myAgent.common.result;
 
+import com.chat.myAgent.common.constant.ResultCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,21 +30,21 @@ public class R<T> implements Serializable {
     // ==================== 成功响应 ====================
 
     public static <T> R<T> ok(T data) {
-        return new R<>(200, "success", data);
+        return new R<>(ResultCode.SUCCESS, "success", data);
     }
 
     public static <T> R<T> ok(String message, T data) {
-        return new R<>(200, message, data);
+        return new R<>(ResultCode.SUCCESS, message, data);
     }
 
     public static R<Void> ok() {
-        return new R<>(200, "success", null);
+        return new R<>(ResultCode.SUCCESS, "success", null);
     }
 
     // ==================== 失败响应 ====================
 
     public static <T> R<T> fail(String message) {
-        return new R<>(500, message, null);
+        return new R<>(ResultCode.INTERNAL_ERROR, message, null);
     }
 
     public static <T> R<T> fail(int code, String message) {
@@ -53,14 +54,18 @@ public class R<T> implements Serializable {
     // ==================== 预定义错误码（扩展性预留） ====================
 
     public static <T> R<T> paramError(String message) {
-        return new R<>(400, message, null);
+        return new R<>(ResultCode.BAD_REQUEST, message, null);
     }
 
     public static <T> R<T> unauthorized(String message) {
-        return new R<>(401, message, null);
+        return new R<>(ResultCode.UNAUTHORIZED, message, null);
+    }
+
+    public static <T> R<T> forbidden(String message) {
+        return new R<>(ResultCode.FORBIDDEN, message, null);
     }
 
     public static <T> R<T> modelError(String message) {
-        return new R<>(503, "模型服务异常: " + message, null);
+        return new R<>(ResultCode.THIRD_PARTY_ERROR, "模型服务异常: " + message, null);
     }
 }

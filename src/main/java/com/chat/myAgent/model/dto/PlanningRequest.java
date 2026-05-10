@@ -26,4 +26,9 @@ public class PlanningRequest {
      * true: 规划后自动执行每个步骤
      */
     private Boolean autoExecute = true;
+
+    /**
+     * 是否开启思考模式
+     */
+    private Boolean thinkingMode = false;
 }

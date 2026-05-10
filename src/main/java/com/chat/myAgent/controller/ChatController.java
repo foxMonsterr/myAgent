@@ -2,6 +2,7 @@ package com.chat.myAgent.controller;
 
 import com.chat.myAgent.agent.ChatAgent;
 import com.chat.myAgent.agent.StructuredAgent;
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.common.result.R;
 import com.chat.myAgent.model.dto.ChatRequest;
 import com.chat.myAgent.model.dto.StructuredRequest;
@@ -35,7 +36,7 @@ public class ChatController {
     @Operation(summary = "简单对话（无记忆）")
     @PostMapping("/simple")
     public R<ChatResponse> simpleChat(@Valid @RequestBody ChatRequest request) {
-        ChatResponse response = chatAgent.simpleChat(request);
+        ChatResponse response = chatAgent.simpleChat(request, request.getThinkingMode() != null && request.getThinkingMode());
         return R.ok(response);
     }
 
@@ -46,7 +47,7 @@ public class ChatController {
     @Operation(summary = "健康检查")
     @GetMapping("/ping")
     public R<String> ping() {
-        return R.ok("SmartAgent is running! 🚀 (Phase 2: Memory + Prompt + Structured Output)");
+        return R.ok("SmartAgent is running! 🚀 (Phase 2: Memory + Prompt + Structured Output) traceId=" + TraceContext.getTraceId());
     }
 
     /**
@@ -65,7 +66,7 @@ public class ChatController {
     @Operation(summary = "多轮记忆对话", description = "相同conversationId的对话会记住之前的内容，不同conversationId互不干扰")
     @PostMapping("/memory")
     public R<ChatResponse> memoryChat(@Valid @RequestBody ChatRequest request) {
-        ChatResponse response = chatAgent.chat(request);
+        ChatResponse response = chatAgent.chat(request, request.getThinkingMode() != null && request.getThinkingMode());
         return R.ok(response);
     }
 
@@ -103,7 +104,7 @@ public class ChatController {
         String role = request.getRole() != null ? request.getRole() : "通用技术";
         String level = request.getLevel() != null ? request.getLevel() : "intermediate";
 
-        ChatResponse response = chatAgent.expertChat(request, role, level);
+        ChatResponse response = chatAgent.expertChat(request, role, level, request.getThinkingMode() != null && request.getThinkingMode());
         return R.ok(response);
     }
 

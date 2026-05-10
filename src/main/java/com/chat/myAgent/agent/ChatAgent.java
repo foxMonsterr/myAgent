@@ -1,8 +1,10 @@
 package com.chat.myAgent.agent;
 
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.config.ModelConfig;
 import com.chat.myAgent.model.dto.ChatRequest;
 import com.chat.myAgent.model.vo.ChatResponse;
+import com.chat.myAgent.service.AuditService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -32,6 +34,7 @@ public class ChatAgent {
     private final ChatClient fallbackChatClient;
     private final ChatMemory chatMemory;
     private final ModelConfig modelConfig;
+    private final AuditService auditService;
 
     @Value("classpath:prompts/expert-system.st")
     private Resource expertPromptResource;
@@ -41,12 +44,14 @@ public class ChatAgent {
             @Qualifier("memoryChatClient") ChatClient memoryChatClient,
             @Qualifier("fallbackChatClient") ChatClient fallbackChatClient,
             ChatMemory chatMemory,
-            ModelConfig modelConfig) {
+            ModelConfig modelConfig,
+            AuditService auditService) {
         this.baseChatClient = baseChatClient;
         this.memoryChatClient = memoryChatClient;
         this.fallbackChatClient = fallbackChatClient;
         this.chatMemory = chatMemory;
         this.modelConfig = modelConfig;
+        this.auditService = auditService;
     }
 
     /**
@@ -72,7 +77,11 @@ public class ChatAgent {
                     .call()
                     .content();
 
-            return buildResponse(conversationId, reply, modelConfig.getPrimaryModel(), null, thinkingMode);
+            ChatResponse response = buildResponse(conversationId, reply, modelConfig.getPrimaryModel(), null, thinkingMode);
+            auditService.saveChatHistory(conversationId, "anonymous", "user", userMessage, "simple", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveChatHistory(conversationId, "anonymous", "assistant", response.getReply(), "simple", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveAgentInvocation(conversationId, "simple", modelConfig.getPrimaryModel(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
+            return response;
         } catch (Exception primaryEx) {
             log.warn("SimpleChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage());
             return simpleChatFallback(conversationId, userMessage, thinkingMode, primaryEx);
@@ -107,6 +116,9 @@ public class ChatAgent {
 
             int historySize = getHistorySize(conversationId);
             ChatResponse response = buildResponse(conversationId, reply, modelConfig.getPrimaryModel(), historySize, thinkingMode);
+            auditService.saveChatHistory(conversationId, "anonymous", "user", userMessage, "memory", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveChatHistory(conversationId, "anonymous", "assistant", response.getReply(), "memory", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveAgentInvocation(conversationId, "memory", modelConfig.getPrimaryModel(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
 
             log.debug("MemoryChat [{}] 回复 (历史{}轮): {}", conversationId, historySize, response.getReply());
             return response;
@@ -149,7 +161,11 @@ public class ChatAgent {
                     .content();
 
             int historySize = getHistorySize(conversationId);
-            return buildResponse(conversationId, reply, modelConfig.getPrimaryModel(), historySize, thinkingMode);
+            ChatResponse response = buildResponse(conversationId, reply, modelConfig.getPrimaryModel(), historySize, thinkingMode);
+            auditService.saveChatHistory(conversationId, "anonymous", "user", userMessage, "expert", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveChatHistory(conversationId, "anonymous", "assistant", response.getReply(), "expert", modelConfig.getPrimaryModel(), null, null, 0L);
+            auditService.saveAgentInvocation(conversationId, "expert", modelConfig.getPrimaryModel(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
+            return response;
         } catch (Exception primaryEx) {
             log.warn("ExpertChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage());
             return expertChatFallback(conversationId, userMessage, role, level, thinkingMode, primaryEx);
@@ -185,6 +201,7 @@ public class ChatAgent {
                 .conversationId(conversationId)
                 .reply(parts.finalAnswer())
                 .thinking(parts.thinking())
+                .traceId(TraceContext.getTraceId())
                 .model(modelName)
                 .historySize(historySize)
                 .build();
@@ -201,7 +218,9 @@ public class ChatAgent {
                     .call()
                     .content();
 
-            return buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), null, thinkingMode);
+            ChatResponse response = buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), null, thinkingMode);
+            auditService.saveAgentInvocation(conversationId, "simple-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
+            return response;
         } catch (Exception fallbackEx) {
             log.error("SimpleChat 兜底模型也调用失败", fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);
@@ -223,7 +242,9 @@ public class ChatAgent {
                     .content();
 
             int historySize = getHistorySize(conversationId);
-            return buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), historySize, thinkingMode);
+            ChatResponse response = buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), historySize, thinkingMode);
+            auditService.saveAgentInvocation(conversationId, "memory-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
+            return response;
         } catch (Exception fallbackEx) {
             log.error("MemoryChat 兜底模型也调用失败", fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);
@@ -250,7 +271,9 @@ public class ChatAgent {
                     .content();
 
             int historySize = getHistorySize(conversationId);
-            return buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), historySize, thinkingMode);
+            ChatResponse response = buildResponse(conversationId, reply, modelConfig.getFallbackModelName(), historySize, thinkingMode);
+            auditService.saveAgentInvocation(conversationId, "expert-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
+            return response;
         } catch (Exception fallbackEx) {
             log.error("ExpertChat 兜底模型也调用失败", fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);

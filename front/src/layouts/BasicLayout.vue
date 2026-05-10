@@ -10,15 +10,7 @@
       </div>
 
       <el-menu router :default-active="$route.path" class="side-menu" :collapse-transition="false">
-        <el-menu-item index="/dashboard">仪表盘</el-menu-item>
-        <el-menu-item index="/docs">接口文档</el-menu-item>
-        <el-menu-item index="/chat">对话管理</el-menu-item>
-        <el-menu-item index="/agent">Agent 管理</el-menu-item>
-        <el-menu-item index="/knowledge">知识库</el-menu-item>
-        <el-menu-item index="/planning">任务规划</el-menu-item>
-        <el-menu-item index="/stream">流式对话</el-menu-item>
-        <el-menu-item index="/session">会话管理</el-menu-item>
-        <el-menu-item index="/monitor">监控面板</el-menu-item>
+        <el-menu-item v-for="item in visibleMenus" :key="item.index" :index="item.index">{{ item.label }}</el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -54,23 +46,53 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
+import { usePermissionStore } from '@/store/modules/permission'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const permissionStore = usePermissionStore()
 
 const pageTitle = computed(() => (route.meta.title as string) || 'AI Agent 管理台')
+
+const visibleMenus = computed(() => {
+  const menus = [
+    { index: '/dashboard', label: '仪表盘', key: 'dashboard' },
+    { index: '/demo', label: '演示中心', key: 'demo' },
+    { index: '/resume', label: '简历项目', key: 'resume' },
+    { index: '/deploy', label: '部署验收', key: 'deploy' },
+    { index: '/release', label: '发布说明', key: 'release' },
+    { index: '/docs', label: '接口文档', key: 'docs' },
+    { index: '/chat', label: '对话管理', key: 'chat' },
+    { index: '/agent', label: 'Agent 管理', key: 'agent' },
+    { index: '/knowledge', label: '知识库', key: 'knowledge' },
+    { index: '/planning', label: '任务规划', key: 'planning' },
+    { index: '/stream', label: '流式对话', key: 'stream' },
+    { index: '/session', label: '会话管理', key: 'session' },
+    { index: '/monitor', label: '监控面板', key: 'monitor' },
+    { index: '/audit', label: '审计日志', key: 'audit' },
+    { index: '/admin', label: '用户管理', key: 'admin' },
+  ]
+  return menus.filter(item => permissionStore.menus.length === 0 || permissionStore.hasMenu(item.key))
+})
 
 const handleLogout = async () => {
   await ElMessageBox.confirm('确认退出登录吗？', '提示', { type: 'warning' })
   userStore.clearUser()
+  permissionStore.clearPermission()
   router.push('/login')
 }
+
+onMounted(async () => {
+  if (userStore.token && !permissionStore.loaded) {
+    await permissionStore.loadPermission()
+  }
+})
 </script>
 
 <style scoped lang="scss">

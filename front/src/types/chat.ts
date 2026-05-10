@@ -17,6 +17,9 @@ export interface ChatResponse {
   conversationId?: string
   reply?: string
   thinking?: string
+  traceId?: string
+  code?: number
+  message?: string
   model?: string
   historySize?: number
   tokenUsage?: {

@@ -1,6 +1,7 @@
 package com.chat.myAgent.controller;
 
 import com.chat.myAgent.agent.ToolAgent;
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.common.result.R;
 import com.chat.myAgent.model.dto.AgentRequest;
 import com.chat.myAgent.model.vo.AgentResponse;
@@ -32,7 +33,9 @@ public class AgentController {
     @Operation(summary = "工具调用对话（无记忆）", description = "AI根据问题自主决定是否调用工具，不保留上下文")
     @PostMapping("/chat")
     public R<AgentResponse> chat(@Valid @RequestBody AgentRequest request) {
-        AgentResponse response = toolAgent.chat(request);
+        AgentResponse response = request.getThinkingMode() != null && request.getThinkingMode()
+                ? toolAgent.chatWithMemory(request)
+                : toolAgent.chat(request);
         return R.ok(response);
     }
 
@@ -66,7 +69,6 @@ public class AgentController {
     @PostMapping("/chat/specific")
     public R<AgentResponse> chatWithSpecificTools(@Valid @RequestBody AgentRequest request) {
         if (request.getTools() == null || request.getTools().isEmpty()) {
-            // 未指定工具时，使用全量工具
             return R.ok(toolAgent.chat(request));
         }
         String[] toolNames = request.getTools().toArray(new String[0]);

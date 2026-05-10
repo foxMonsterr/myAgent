@@ -1,7 +1,11 @@
 package com.chat.myAgent.common.exception;
 
+import com.chat.myAgent.common.constant.ResultCode;
 import com.chat.myAgent.common.result.R;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -34,10 +38,32 @@ public class GlobalExceptionHandler {
     /**
      * 处理参数校验异常
      */
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
-    public R<Void> handleValidException(Exception e) {
-        log.warn("参数校验失败: {}", e.getMessage());
-        return R.paramError("请求参数不合法");
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public R<Void> handleValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .orElse("请求参数不合法");
+        log.warn("参数校验失败: {}", message);
+        return R.paramError(message);
+    }
+
+    /**
+     * 处理约束校验异常
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public R<Void> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("约束校验失败: {}", e.getMessage());
+        return R.paramError(e.getMessage());
+    }
+
+    /**
+     * 处理权限不足
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public R<Void> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("权限不足: {}", e.getMessage());
+        return R.forbidden("无权限访问该资源");
     }
 
     /**
@@ -46,6 +72,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public R<Void> handleException(Exception e) {
         log.error("未知异常: {}", e.getMessage(), e);
-        return R.fail("服务器内部错误，请稍后重试");
+        return R.fail(ResultCode.INTERNAL_ERROR, "服务器内部错误，请稍后重试");
     }
 }

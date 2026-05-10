@@ -24,4 +24,9 @@ public class StructuredResponse<T> {
      * 原始输入
      */
     private String originalInput;
+
+    /**
+     * 本次响应关联的 traceId
+     */
+    private String traceId;
 }

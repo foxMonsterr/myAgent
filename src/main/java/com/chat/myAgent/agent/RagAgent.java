@@ -1,7 +1,9 @@
 package com.chat.myAgent.agent;
 
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.model.vo.KnowledgeResponse;
 import com.chat.myAgent.rag.RetrievalService;
+import com.chat.myAgent.service.AuditService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -32,14 +34,17 @@ public class RagAgent {
     private final ChatClient ragChatClient;
     private final ChatClient baseChatClient;
     private final RetrievalService retrievalService;
+    private final AuditService auditService;
 
     public RagAgent(
             @Qualifier("ragChatClient") ChatClient ragChatClient,
             @Qualifier("baseChatClient") ChatClient baseChatClient,
-            RetrievalService retrievalService) {
+            RetrievalService retrievalService,
+            AuditService auditService) {
         this.ragChatClient = ragChatClient;
         this.baseChatClient = baseChatClient;
         this.retrievalService = retrievalService;
+        this.auditService = auditService;
     }
 
     /**
@@ -71,13 +76,16 @@ public class RagAgent {
 
         log.debug("RagAgent [{}] 回复 (引用{}个来源): {}", resolvedConversationId, sources.size(), reply);
 
-        return KnowledgeResponse.builder()
+        KnowledgeResponse response = KnowledgeResponse.builder()
                 .conversationId(resolvedConversationId)
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
                 .model("deepseek-v4-flash")
+                .traceId(TraceContext.getTraceId())
                 .build();
+        auditService.saveAgentInvocation(resolvedConversationId, "rag", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+        return response;
     }
 
     /**
@@ -96,13 +104,16 @@ public class RagAgent {
         List<String> sources = retrievalService.getSourceFiles(relatedDocs);
 
         if (relatedDocs.isEmpty()) {
-            return KnowledgeResponse.builder()
+            KnowledgeResponse response = KnowledgeResponse.builder()
                     .conversationId(conversationId)
                     .answer("抱歉，知识库中暂无与您问题相关的信息。请尝试上传相关文档后再提问。")
                     .sources(List.of())
                     .retrievedChunks(0)
                     .model("deepseek-v4-flash")
+                    .traceId(TraceContext.getTraceId())
                     .build();
+            auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+            return response;
         }
 
         // 2. 手动拼接上下文
@@ -125,13 +136,16 @@ public class RagAgent {
 
         log.debug("RagAgent(Manual) [{}] 回复: {}", conversationId, reply);
 
-        return KnowledgeResponse.builder()
+        KnowledgeResponse response = KnowledgeResponse.builder()
                 .conversationId(conversationId)
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
                 .model("deepseek-v4-flash")
+                .traceId(TraceContext.getTraceId())
                 .build();
+        auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+        return response;
     }
 
     /**

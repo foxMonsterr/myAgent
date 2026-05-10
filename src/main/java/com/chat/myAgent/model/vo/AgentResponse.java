@@ -32,4 +32,14 @@ public class AgentResponse {
      * tool-specific: 指定工具调用
      */
     private String agentType;
+
+    /**
+     * 思考过程
+     */
+    private String thinking;
+
+    /**
+     * 本次响应关联的 traceId
+     */
+    private String traceId;
 }

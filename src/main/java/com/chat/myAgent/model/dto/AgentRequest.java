@@ -28,4 +28,9 @@ public class AgentRequest {
      * 可选值：datetime, calculator, translate, doc, db
      */
     private List<String> tools;
+
+    /**
+     * 是否开启思考模式
+     */
+    private Boolean thinkingMode = false;
 }

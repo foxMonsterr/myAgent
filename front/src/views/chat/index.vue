@@ -57,6 +57,9 @@
           <div class="response-box">
             <template v-if="response">
               <p><b>conversationId:</b> {{ response.conversationId || '-' }}</p>
+              <p><b>traceId:</b> {{ response.traceId || '-' }}</p>
+              <p><b>code:</b> {{ response.code ?? '-' }}</p>
+              <p><b>message:</b> {{ response.message || '-' }}</p>
               <p><b>reply:</b></p>
               <pre>{{ response.reply || '-' }}</pre>
               <template v-if="response.thinking">
@@ -155,7 +158,7 @@ const handleSend = async () => {
     else res = await sendSimpleChat(payload)
 
     response.value = res
-    addLog('success', '请求成功')
+    addLog('success', `请求成功 traceId=${res?.traceId || '-'}`)
   } catch (e: any) {
     addLog('error', e?.message || '请求失败')
   } finally {

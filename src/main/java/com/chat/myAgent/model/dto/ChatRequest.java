@@ -5,6 +5,10 @@ import lombok.Data;
 
 /**
  * 聊天请求体
+ *
+ * 说明：
+ * - thinkingMode：是否开启思考模式
+ * - 该字段用于企业级控制台前后端联动
  */
 @Data
 public class ChatRequest {
@@ -37,4 +41,9 @@ public class ChatRequest {
      * 如：beginner(初学者)、intermediate(中级)、advanced(高级)
      */
     private String level;
+
+    /**
+     * 是否开启思考模式
+     */
+    private Boolean thinkingMode = false;
 }

@@ -1,7 +1,9 @@
 package com.chat.myAgent.agent;
 
+import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.model.dto.AgentRequest;
 import com.chat.myAgent.model.vo.AgentResponse;
+import com.chat.myAgent.service.AuditService;
 import com.chat.myAgent.tool.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -40,6 +42,7 @@ public class ToolAgent {
     private final TranslateTool translateTool;
     private final DocParseTool docParseTool;
     private final DbQueryTool dbQueryTool;
+    private final AuditService auditService;
 
     @Value("classpath:prompts/tool-agent-system.st")
     private Resource toolAgentSystemPrompt;
@@ -51,7 +54,8 @@ public class ToolAgent {
             CalculatorTool calculatorTool,
             TranslateTool translateTool,
             DocParseTool docParseTool,
-            DbQueryTool dbQueryTool) {
+            DbQueryTool dbQueryTool,
+            AuditService auditService) {
         this.baseChatClient = baseChatClient;
         this.chatMemory = chatMemory;
         this.dateTimeTool = dateTimeTool;
@@ -59,6 +63,7 @@ public class ToolAgent {
         this.translateTool = translateTool;
         this.docParseTool = docParseTool;
         this.dbQueryTool = dbQueryTool;
+        this.auditService = auditService;
     }
 
     /**
@@ -80,12 +85,15 @@ public class ToolAgent {
 
         log.debug("ToolAgent [{}] 回复: {}", conversationId, reply);
 
-        return AgentResponse.builder()
+        AgentResponse response = AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
+                .traceId(TraceContext.getTraceId())
                 .model("deepseek-v4-flash")
                 .agentType("tool")
                 .build();
+        auditService.saveAgentInvocation(conversationId, "tool", "deepseek-v4-flash", request.getMessage(), response.getReply(), null, "SUCCESS", 0L);
+        return response;
     }
 
     /**
@@ -113,12 +121,15 @@ public class ToolAgent {
 
         log.debug("ToolAgent(Memory) [{}] 回复: {}", conversationId, reply);
 
-        return AgentResponse.builder()
+        AgentResponse response = AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
+                .traceId(TraceContext.getTraceId())
                 .model("deepseek-v4-flash")
                 .agentType("tool-memory")
                 .build();
+        auditService.saveAgentInvocation(conversationId, "tool-memory", "deepseek-v4-flash", request.getMessage(), response.getReply(), null, "SUCCESS", 0L);
+        return response;
     }
 
     /**
@@ -142,12 +153,15 @@ public class ToolAgent {
                 .call()
                 .content();
 
-        return AgentResponse.builder()
+        AgentResponse response = AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
+                .traceId(TraceContext.getTraceId())
                 .model("deepseek-v4-flash")
                 .agentType("tool-specific")
                 .build();
+        auditService.saveAgentInvocation(conversationId, "tool-specific", "deepseek-v4-flash", request.getMessage(), response.getReply(), null, "SUCCESS", 0L);
+        return response;
     }
 
     /**

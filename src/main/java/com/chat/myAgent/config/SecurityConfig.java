@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/agent/**").permitAll()
                         .requestMatchers("/api/v1/chat/**").permitAll()
                         .requestMatchers("/api/v1/planning/**").permitAll()
+                        .requestMatchers("/api/v1/session/**").authenticated()
 
                         // 静态资源与首页放行
                         .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
@@ -93,6 +94,9 @@ public class SecurityConfig {
 
                         // 监控接口：仅管理员可访问
                         .requestMatchers("/api/v1/monitor/**").hasRole("ADMIN")
+
+                        // 会话详情 / 历史查询：登录用户可访问，删除会话需要权限控制可在 Controller 上进一步收紧
+                        .requestMatchers("/api/v1/session/**").authenticated()
 
                         // 其他所有接口：默认需要登录认证
                         .anyRequest().authenticated()

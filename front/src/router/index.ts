@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
+import { usePermissionStore } from '@/store/modules/permission'
 import { ElMessage } from 'element-plus'
 import Layout from '@/layouts/BasicLayout.vue'
 
@@ -12,8 +13,13 @@ const router = createRouter({
     {
       path: '/',
       component: Layout,
-      redirect: '/dashboard',
+      redirect: '/home',
       children: [
+        { path: 'home', name: 'Home', component: () => import('@/views/home/index.vue'), meta: { title: '首页', requiresAuth: true } },
+        { path: 'demo', name: 'Demo', component: () => import('@/views/demo/index.vue'), meta: { title: '演示中心', requiresAuth: true } },
+        { path: 'resume', name: 'Resume', component: () => import('@/views/resume/index.vue'), meta: { title: '简历项目', requiresAuth: true } },
+        { path: 'deploy', name: 'Deploy', component: () => import('@/views/deploy/index.vue'), meta: { title: '部署验收', requiresAuth: true } },
+        { path: 'release', name: 'Release', component: () => import('@/views/release/index.vue'), meta: { title: '发布说明', requiresAuth: true } },
         { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/dashboard/index.vue'), meta: { title: '仪表盘', requiresAuth: true } },
         { path: 'docs', name: 'Docs', component: () => import('@/views/docs/index.vue'), meta: { title: '接口文档', requiresAuth: true } },
         { path: 'chat', name: 'Chat', component: () => import('@/views/chat/index.vue'), meta: { title: '对话管理', requiresAuth: true } },
@@ -23,13 +29,16 @@ const router = createRouter({
         { path: 'stream', name: 'Stream', component: () => import('@/views/stream/index.vue'), meta: { title: '流式对话', requiresAuth: true } },
         { path: 'session', name: 'Session', component: () => import('@/views/session/index.vue'), meta: { title: '会话管理', requiresAuth: true } },
         { path: 'monitor', name: 'Monitor', component: () => import('@/views/monitor/index.vue'), meta: { title: '监控面板', requiresAuth: true } },
+        { path: 'audit', name: 'Audit', component: () => import('@/views/audit/index.vue'), meta: { title: '审计日志', requiresAuth: true } },
+        { path: 'admin', name: 'Admin', component: () => import('@/views/admin/index.vue'), meta: { title: '用户管理', requiresAuth: true } },
       ],
     },
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const userStore = useUserStore()
+  const permissionStore = usePermissionStore()
   const hasToken = Boolean(userStore.token)
 
   if (to.meta.title) document.title = `${to.meta.title} - AI Agent 管理台`
@@ -40,8 +49,28 @@ router.beforeEach((to, _from, next) => {
     return
   }
 
+  if (hasToken && !permissionStore.loaded) {
+    try {
+      await permissionStore.loadPermission()
+    } catch {
+      userStore.clearUser()
+      permissionStore.clearPermission()
+      next('/login')
+      return
+    }
+  }
+
+  if (hasToken && permissionStore.loaded && to.meta.requiresAuth) {
+    const routeKey = String(to.name || '').toLowerCase()
+    if (routeKey && permissionStore.menus.length > 0 && !permissionStore.hasMenu(routeKey)) {
+      ElMessage.warning('当前角色无权访问该页面')
+      next('/home')
+      return
+    }
+  }
+
   if ((to.path === '/login' || to.path === '/register' || to.path === '/init-admin') && hasToken) {
-    next('/dashboard')
+    next('/home')
     return
   }
 

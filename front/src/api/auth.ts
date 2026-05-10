@@ -2,13 +2,13 @@ import request from '@/utils/request'
 import type { ApiResponse, AuthResponse, LoginRequest, RegisterRequest } from '@/types/auth'
 
 export const login = (data: LoginRequest) => {
-  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/login', data)
+  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/login', data).then(res => res.data)
 }
 
 export const register = (data: RegisterRequest) => {
-  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/register', data)
+  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/register', data).then(res => res.data)
 }
 
 export const initAdmin = () => {
-  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/init-admin')
+  return request.post<ApiResponse<AuthResponse>>('/api/v1/auth/init-admin').then(res => res.data)
 }

@@ -2,9 +2,11 @@ package com.chat.myAgent.controller;
 
 import com.chat.myAgent.common.result.R;
 import com.chat.myAgent.model.entity.ChatHistoryEntity;
+import com.chat.myAgent.model.vo.MonitorOverviewVO;
 import com.chat.myAgent.monitor.TokenUsageTracker;
 import com.chat.myAgent.repository.ChatHistoryRepository;
 import com.chat.myAgent.repository.UserRepository;
+import com.chat.myAgent.repository.AgentInvocationRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -32,32 +34,37 @@ public class MonitorController {
     private final TokenUsageTracker tokenUsageTracker;
     private final ChatHistoryRepository chatHistoryRepository;
     private final UserRepository userRepository;
+    private final AgentInvocationRepository agentInvocationRepository;
 
-    /**
-     * 获取系统运行统计
-     * GET /api/v1/monitor/stats
-     */
     @Operation(summary = "获取系统运行统计")
     @GetMapping("/stats")
     public R<Map<String, Object>> getStatistics() {
         Map<String, Object> stats = new LinkedHashMap<>();
-
-        // 运行时统计
         stats.put("session", tokenUsageTracker.getSessionStatistics());
-
-        // 全量统计
         stats.put("allTime", tokenUsageTracker.getAllTimeStatistics());
-
-        // 用户统计
         stats.put("totalUsers", userRepository.count());
-
+        stats.put("totalChatRecords", chatHistoryRepository.count());
+        stats.put("totalAgentRuns", agentInvocationRepository.count());
         return R.ok(stats);
     }
 
-    /**
-     * 查询对话历史（分页）
-     * GET /api/v1/monitor/history?username=xxx&page=0&size=20
-     */
+    @Operation(summary = "获取监控概览")
+    @GetMapping("/overview")
+    public R<MonitorOverviewVO> overview() {
+        long promptTokens = chatHistoryRepository.sumPromptTokens() == null ? 0 : chatHistoryRepository.sumPromptTokens();
+        long completionTokens = chatHistoryRepository.sumCompletionTokens() == null ? 0 : chatHistoryRepository.sumCompletionTokens();
+        long totalTokens = chatHistoryRepository.sumTotalTokens() == null ? 0 : chatHistoryRepository.sumTotalTokens();
+        MonitorOverviewVO overview = MonitorOverviewVO.builder()
+                .totalUsers(userRepository.count())
+                .totalChatRecords(chatHistoryRepository.count())
+                .totalAgentRuns(agentInvocationRepository.count())
+                .totalTokens(totalTokens)
+                .promptTokens(promptTokens)
+                .completionTokens(completionTokens)
+                .build();
+        return R.ok(overview);
+    }
+
     @Operation(summary = "查询对话历史")
     @GetMapping("/history")
     public R<Page<ChatHistoryEntity>> getHistory(
@@ -77,23 +84,14 @@ public class MonitorController {
         return R.ok(result);
     }
 
-    /**
-     * 查询指定会话的完整对话
-     * GET /api/v1/monitor/conversation/{conversationId}
-     */
     @Operation(summary = "查询指定会话的完整对话")
     @GetMapping("/conversation/{conversationId}")
     public R<List<ChatHistoryEntity>> getConversation(@PathVariable String conversationId) {
-        List<ChatHistoryEntity> history =
-                chatHistoryRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
+        List<ChatHistoryEntity> history = chatHistoryRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
         return R.ok(history);
     }
 
-    /**
-     * 查询用户的所有会话列表
-     * GET /api/v1/monitor/sessions/{username}
-     */
-    @Operation(summary = "查询用户的会话列表")
+    @Operation(summary = "查询用户的所有会话列表")
     @GetMapping("/sessions/{username}")
     public R<List<String>> getUserSessions(@PathVariable String username) {
         List<String> sessions = chatHistoryRepository.findDistinctConversationIdsByUsername(username);
