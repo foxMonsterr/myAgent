@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="jdbc:h2:file:./data/smartagent-db;AUTO_SERVER=TRUE" group="调试会话 MainApplication" uuid="6e1f99c8-e011-47d6-a05a-0e7e0840a800">
+      <driver-ref>h2.unified</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <jdbc-driver>org.h2.Driver</jdbc-driver>
+      <jdbc-url>jdbc:h2:file:./data/smartagent-db;AUTO_SERVER=TRUE</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="jdbc:h2:mem:d3037f2a-e4e8-4f6d-b84d-7fbd28560139;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE" group="调试会话 MainApplication" uuid="380d1a5a-4f47-483f-9834-b4bcffc8da0a">
+      <driver-ref>h2.unified</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <jdbc-driver>org.h2.Driver</jdbc-driver>
+      <jdbc-url>jdbc:h2:mem:d3037f2a-e4e8-4f6d-b84d-7fbd28560139;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="jdbc:h2:file:./data/smartagent-db;AUTO_SERVER=TRUE" group="调试会话 MainApplication" uuid="8c4dc7b5-2949-4d62-b626-3947cf5e6d73">
+      <driver-ref>h2.unified</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <jdbc-driver>org.h2.Driver</jdbc-driver>
+      <jdbc-url>jdbc:h2:file:./data/smartagent-db;AUTO_SERVER=TRUE</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>
