@@ -8,7 +8,7 @@ public class AgentConstants {
     private AgentConstants() {}
 
     // ==================== 模型相关 ====================
-    public static final String DEFAULT_MODEL = "deepseek-v4-flash";
+    public static final String DEFAULT_MODEL = "deepseek-chat";
     public static final String QWEN_MODEL = "qwen-plus";
 
     // ==================== 会话相关 ====================

@@ -14,12 +14,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 /**
  * ChatClient 配置
  *
  * 说明：
- * - 主模型使用 DeepSeek
+ * - 主模型使用 DeepSeek Chat
  * - 兜底模型使用 Qwen3.6-Plus
  * - 两者通过独立的 OpenAiApi + OpenAiChatModel + ChatClient 进行隔离，
  *   这样失败切换时不会复用同一个底层模型配置。
@@ -27,7 +34,7 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class ChatClientConfig {
 
-    @Value("${smart-agent.models.default-model:deepseek-v4-flash}")
+    @Value("${smart-agent.models.default-model:deepseek-chat}")
     private String primaryModelName;
 
     @Value("${smart-agent.models.fallback-model:qwen3.6-plus}")
@@ -36,14 +43,29 @@ public class ChatClientConfig {
     @Value("${deepseek.api-base-url:${spring.ai.openai.base-url:https://api.deepseek.com}}")
     private String deepseekBaseUrl;
 
-    @Value("${deepseek.api-key:${spring.ai.openai.api-key:}}")
+    @Value("${deepseek.api-key:${DEEPSEEK_API_KEY:}}")
     private String deepseekApiKey;
 
-    @Value("${qwen.api-base-url:https://dashscope.aliyuncs.com/compatible-mode/v1}")
+    @Value("${qwen.api-base-url:https://dashscope.aliyuncs.com/compatible-mode}")
     private String qwenBaseUrl;
 
     @Value("${qwen.api-key:${QWEN_API_KEY:}}")
     private String qwenApiKey;
+
+    @Value("${smart-agent.network.connect-timeout:8s}")
+    private Duration connectTimeout;
+
+    @Value("${smart-agent.network.read-timeout:25s}")
+    private Duration readTimeout;
+
+    @Value("${smart-agent.retry.primary.max-attempts:1}")
+    private int primaryMaxAttempts;
+
+    @Value("${smart-agent.retry.fallback.max-attempts:1}")
+    private int fallbackMaxAttempts;
+
+    @Value("${smart-agent.retry.backoff-ms:200}")
+    private long retryBackoffMs;
 
     @Value("classpath:prompts/chat-system.st")
     private Resource chatSystemPrompt;
@@ -57,16 +79,18 @@ public class ChatClientConfig {
     @Bean("primaryOpenAiApi")
     public OpenAiApi primaryOpenAiApi() {
         return OpenAiApi.builder()
-                .baseUrl(deepseekBaseUrl)
+                .baseUrl(normalizeBaseUrl(deepseekBaseUrl))
                 .apiKey(deepseekApiKey)
+                .restClientBuilder(buildRestClientBuilder())
                 .build();
     }
 
     @Bean("fallbackOpenAiApi")
     public OpenAiApi fallbackOpenAiApi() {
         return OpenAiApi.builder()
-                .baseUrl(qwenBaseUrl)
+                .baseUrl(normalizeBaseUrl(qwenBaseUrl))
                 .apiKey(qwenApiKey)
+                .restClientBuilder(buildRestClientBuilder())
                 .build();
     }
 
@@ -74,6 +98,7 @@ public class ChatClientConfig {
     public OpenAiChatModel primaryChatModel(@Qualifier("primaryOpenAiApi") OpenAiApi openAiApi) {
         return OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
+                .retryTemplate(buildRetryTemplate(primaryMaxAttempts))
                 .defaultOptions(OpenAiChatOptions.builder()
                         .model(primaryModelName)
                         .temperature(0.7)
@@ -86,12 +111,47 @@ public class ChatClientConfig {
     public OpenAiChatModel fallbackChatModel(@Qualifier("fallbackOpenAiApi") OpenAiApi openAiApi) {
         return OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
+                .retryTemplate(buildRetryTemplate(fallbackMaxAttempts))
                 .defaultOptions(OpenAiChatOptions.builder()
                         .model(fallbackModelName)
                         .temperature(0.7)
                         .maxTokens(4096)
                         .build())
                 .build();
+    }
+
+    private RestClient.Builder buildRestClientBuilder() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout((int) connectTimeout.toMillis());
+        requestFactory.setReadTimeout((int) readTimeout.toMillis());
+        return RestClient.builder().requestFactory(requestFactory);
+    }
+
+    private RetryTemplate buildRetryTemplate(int maxAttempts) {
+        RetryTemplate retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(new SimpleRetryPolicy(Math.max(1, maxAttempts)));
+        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+        backOffPolicy.setBackOffPeriod(Math.max(0L, retryBackoffMs));
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+        return retryTemplate;
+    }
+
+    /**
+     * OpenAI 兼容协议下，baseUrl 应该是“域名/网关根路径”，不应再包含结尾 /v1。
+     * 避免出现 .../v1/v1/chat/completions 这种重复路径。
+     */
+    private String normalizeBaseUrl(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String url = raw.trim();
+        while (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        if (url.endsWith("/v1")) {
+            url = url.substring(0, url.length() - 3);
+        }
+        return url;
     }
 
     @Bean("fallbackChatClient")

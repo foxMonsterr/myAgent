@@ -43,7 +43,7 @@ public class ConversationRecord {
     private String agentType;
 
     /**
-     * 使用的模型名称（如 deepseek-v4-flash）
+     * 使用的模型名称（如 deepseek-chat）
      */
     private String model;
 

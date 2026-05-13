@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export interface PerformanceSummaryVO {
   requestSuccessRate: number
@@ -11,5 +10,4 @@ export interface PerformanceSummaryVO {
   avgLatencyMs: number
 }
 
-export const getPerformanceSummary = () =>
-  request.get<ApiResponse<PerformanceSummaryVO>>('/api/v1/performance/summary').then(res => res.data)
+export const getPerformanceSummary = () => request.get('/api/v1/performance/summary')

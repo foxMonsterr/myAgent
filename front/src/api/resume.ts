@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export interface ResumeProjectVO {
   projectName: string
@@ -9,4 +8,4 @@ export interface ResumeProjectVO {
   responsibilities: string[]
 }
 
-export const getResumeProject = () => request.get<ApiResponse<ResumeProjectVO>>('/api/v1/resume/project').then(res => res.data)
+export const getResumeProject = () => request.get('/api/v1/resume/project')

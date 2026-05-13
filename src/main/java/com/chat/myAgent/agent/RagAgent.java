@@ -6,7 +6,6 @@ import com.chat.myAgent.rag.RetrievalService;
 import com.chat.myAgent.service.AuditService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.document.Document;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -61,18 +60,38 @@ public class RagAgent {
 
         log.debug("RagAgent [{}] 问题: {}", resolvedConversationId, question);
 
-        // 使用 ragChatClient（已配置 QuestionAnswerAdvisor）
-        String reply = ragChatClient.prompt()
-                .user(question)
-                .advisors(advisor -> advisor
-                        .param(ChatMemory.CONVERSATION_ID, resolvedConversationId)
-                )
-                .call()
-                .content();
-
-        // 额外做一次检索，获取来源信息（用于展示给用户）
+        // 自动RAG改为“手动检索 + 直接生成”，避免 QuestionAnswerAdvisor 额外链路导致 404
         List<Document> relatedDocs = retrievalService.retrieve(question);
         List<String> sources = retrievalService.getSourceFiles(relatedDocs);
+
+        if (relatedDocs.isEmpty()) {
+            KnowledgeResponse response = KnowledgeResponse.builder()
+                    .conversationId(resolvedConversationId)
+                    .answer("抱歉，知识库中暂无与您问题相关的信息。请尝试上传相关文档后再提问。")
+                    .sources(List.of())
+                    .retrievedChunks(0)
+                    .model("deepseek-chat")
+                    .traceId(TraceContext.getTraceId())
+                    .build();
+            auditService.saveAgentInvocation(resolvedConversationId, "rag", "deepseek-chat", question, response.getAnswer(), null, "SUCCESS", 0L);
+            return response;
+        }
+
+        StringBuilder context = new StringBuilder();
+        context.append("以下是从知识库中检索到的相关参考资料：\n\n");
+        for (int i = 0; i < relatedDocs.size(); i++) {
+            Document doc = relatedDocs.get(i);
+            String source = (String) doc.getMetadata().getOrDefault("source", "未知");
+            context.append("[参考").append(i + 1).append("] 来源: ").append(source).append("\n");
+            context.append(doc.getText()).append("\n\n");
+        }
+        context.append("---\n请基于以上参考资料回答用户的问题。如果参考资料中没有相关信息，请说明。\n");
+
+        String reply = baseChatClient.prompt()
+                .system(context.toString())
+                .user(question)
+                .call()
+                .content();
 
         log.debug("RagAgent [{}] 回复 (引用{}个来源): {}", resolvedConversationId, sources.size(), reply);
 
@@ -81,10 +100,10 @@ public class RagAgent {
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .traceId(TraceContext.getTraceId())
                 .build();
-        auditService.saveAgentInvocation(resolvedConversationId, "rag", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+        auditService.saveAgentInvocation(resolvedConversationId, "rag", "deepseek-chat", question, response.getAnswer(), null, "SUCCESS", 0L);
         return response;
     }
 
@@ -109,10 +128,10 @@ public class RagAgent {
                     .answer("抱歉，知识库中暂无与您问题相关的信息。请尝试上传相关文档后再提问。")
                     .sources(List.of())
                     .retrievedChunks(0)
-                    .model("deepseek-v4-flash")
+                    .model("deepseek-chat")
                     .traceId(TraceContext.getTraceId())
                     .build();
-            auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+            auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-chat", question, response.getAnswer(), null, "SUCCESS", 0L);
             return response;
         }
 
@@ -141,10 +160,10 @@ public class RagAgent {
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .traceId(TraceContext.getTraceId())
                 .build();
-        auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-v4-flash", question, response.getAnswer(), null, "SUCCESS", 0L);
+        auditService.saveAgentInvocation(conversationId, "rag-manual", "deepseek-chat", question, response.getAnswer(), null, "SUCCESS", 0L);
         return response;
     }
 

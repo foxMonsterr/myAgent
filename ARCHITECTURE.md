@@ -582,7 +582,7 @@ spring:
       api-key: ${Deepseek_API_KEY:your-api-key-here}
       chat:
         options:
-          model: ${AI_MODEL:deepseek-v4-flash}
+          model: ${AI_MODEL:deepseek-chat}
           temperature: 0.7
           max-tokens: 4096
   servlet:
@@ -630,7 +630,7 @@ logging:
 | `smart-agent.jwt.secret` | 内置默认值 | JWT 签名密钥 |
 | `smart-agent.jwt.expiration-hours` | 24 | Token 有效期 |
 | `smart-agent.rate-limit.max-requests-per-minute` | 30 | API 限流阈值 |
-| `smart-agent.models.default-model` | deepseek-v4-flash | 默认模型 |
+| `smart-agent.models.default-model` | deepseek-chat | 默认模型 |
 | `smart-agent.models.available` | - | 可用模型映射 |
 
 ---

@@ -36,7 +36,8 @@ public class ChatController {
     @Operation(summary = "简单对话（无记忆）")
     @PostMapping("/simple")
     public R<ChatResponse> simpleChat(@Valid @RequestBody ChatRequest request) {
-        ChatResponse response = chatAgent.simpleChat(request, request.getThinkingMode() != null && request.getThinkingMode());
+        request.setThinkingMode(false);
+        ChatResponse response = chatAgent.simpleChat(request, false);
         return R.ok(response);
     }
 
@@ -66,7 +67,8 @@ public class ChatController {
     @Operation(summary = "多轮记忆对话", description = "相同conversationId的对话会记住之前的内容，不同conversationId互不干扰")
     @PostMapping("/memory")
     public R<ChatResponse> memoryChat(@Valid @RequestBody ChatRequest request) {
-        ChatResponse response = chatAgent.chat(request, request.getThinkingMode() != null && request.getThinkingMode());
+        request.setThinkingMode(false);
+        ChatResponse response = chatAgent.chat(request, false);
         return R.ok(response);
     }
 
@@ -77,8 +79,9 @@ public class ChatController {
     @Operation(summary = "多轮记忆对话（支持思考模式）")
     @PostMapping("/memory/thinking")
     public R<ChatResponse> memoryChatThinking(@Valid @RequestBody ChatRequest request,
-                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "true") boolean thinkingMode) {
-        ChatResponse response = chatAgent.chat(request, thinkingMode);
+                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "false") boolean thinkingMode) {
+        request.setThinkingMode(false);
+        ChatResponse response = chatAgent.chat(request, false);
         return R.ok(response);
     }
 
@@ -89,14 +92,6 @@ public class ChatController {
      * 演示 PromptTemplate 动态变量替换：
      * - role: 专家领域（如 Java、Python、前端）
      * - level: 用户水平（如 beginner、intermediate、advanced）
-     *
-     * 请求示例：
-     * {
-     *   "conversationId": "expert-java-001",
-     *   "message": "什么是 Spring IoC？",
-     *   "role": "Java",
-     *   "level": "beginner"
-     * }
      */
     @Operation(summary = "专家角色对话", description = "PromptTemplate动态变量替换，可指定专家领域和用户水平")
     @PostMapping("/expert")
@@ -104,7 +99,8 @@ public class ChatController {
         String role = request.getRole() != null ? request.getRole() : "通用技术";
         String level = request.getLevel() != null ? request.getLevel() : "intermediate";
 
-        ChatResponse response = chatAgent.expertChat(request, role, level, request.getThinkingMode() != null && request.getThinkingMode());
+        request.setThinkingMode(false);
+        ChatResponse response = chatAgent.expertChat(request, role, level, false);
         return R.ok(response);
     }
 
@@ -115,11 +111,12 @@ public class ChatController {
     @Operation(summary = "专家角色对话（支持思考模式）")
     @PostMapping("/expert/thinking")
     public R<ChatResponse> expertChatThinking(@Valid @RequestBody ChatRequest request,
-                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "true") boolean thinkingMode) {
+                                              @Parameter(description = "是否开启思考模式") @RequestParam(defaultValue = "false") boolean thinkingMode) {
         String role = request.getRole() != null ? request.getRole() : "通用技术";
         String level = request.getLevel() != null ? request.getLevel() : "intermediate";
 
-        ChatResponse response = chatAgent.expertChat(request, role, level, thinkingMode);
+        request.setThinkingMode(false);
+        ChatResponse response = chatAgent.expertChat(request, role, level, false);
         return R.ok(response);
     }
 

@@ -85,6 +85,11 @@ public class SecurityConfig {
                         // SSE 流式接口：为了方便浏览器直接测试，先放行
                         .requestMatchers("/api/v1/stream/**").permitAll()
 
+                        // 知识库问答 / 检索 / 状态：登录后即可使用
+                        .requestMatchers("/api/v1/knowledge/ask/**").authenticated()
+                        .requestMatchers("/api/v1/knowledge/search").authenticated()
+                        .requestMatchers("/api/v1/knowledge/status").authenticated()
+
                         // 知识库管理：上传 / 加载 需要管理员权限
                         .requestMatchers("/api/v1/knowledge/upload/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/knowledge/load-directory/**").hasRole("ADMIN")

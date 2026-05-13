@@ -23,7 +23,7 @@ public class ModelConfig {
     /**
      * 默认主模型
      */
-    private String defaultModel = "deepseek-v4-flash";
+    private String defaultModel = "deepseek-chat";
 
     /**
      * 兜底模型

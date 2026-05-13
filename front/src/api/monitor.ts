@@ -1,10 +1,21 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export const getMonitorOverview = () => {
-  return request.get<ApiResponse<any>>('/api/v1/monitor/overview').then(res => res.data)
+  return request.get('/api/v1/monitor/overview')
 }
 
 export const getMonitorStats = () => {
-  return request.get<ApiResponse<any>>('/api/v1/monitor/stats').then(res => res.data)
+  return request.get('/api/v1/monitor/stats')
+}
+
+export const getMonitorHistory = (params: { username?: string; page?: number; size?: number }) => {
+  return request.get('/api/v1/monitor/history', { params })
+}
+
+export const getMonitorConversation = (conversationId: string) => {
+  return request.get(`/api/v1/monitor/conversation/${encodeURIComponent(conversationId)}`)
+}
+
+export const getMonitorSessions = (username: string) => {
+  return request.get(`/api/v1/monitor/sessions/${encodeURIComponent(username)}`)
 }

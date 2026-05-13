@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export interface OpsMetricVO {
   title: string
@@ -35,5 +34,5 @@ export interface OpsDashboardVO {
   recentAudits: AuditLogVO[]
 }
 
-export const getOpsMetrics = () => request.get<ApiResponse<OpsMetricVO[]>>('/api/v1/ops/metrics').then(res => res.data)
-export const getOpsDashboard = () => request.get<ApiResponse<OpsDashboardVO>>('/api/v1/ops/dashboard').then(res => res.data)
+export const getOpsMetrics = () => request.get('/api/v1/ops/metrics')
+export const getOpsDashboard = () => request.get('/api/v1/ops/dashboard')

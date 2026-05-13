@@ -47,18 +47,22 @@ const rules: FormRules = {
 }
 
 const handleLogin = async () => {
-  await formRef.value?.validate()
+  const ok = await formRef.value?.validate().catch(() => false)
+  if (!ok) return
+
   loading.value = true
   try {
-    const res = await login(form)
-    const data = res.data
-    if (!data) {
-      ElMessage.error('登录失败，返回数据为空')
+    const auth = await login(form)
+    if (!auth || !auth.token) {
+      ElMessage.error('登录失败，返回数据为空或缺少 token')
       return
     }
-    userStore.setAuth(data)
+    userStore.setAuth(auth)
     ElMessage.success('登录成功')
     await router.push('/home')
+  } catch (error) {
+    console.error('[login] failed:', error)
+    ElMessage.error('登录流程失败，请查看控制台日志')
   } finally {
     loading.value = false
   }

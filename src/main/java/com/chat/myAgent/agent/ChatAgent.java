@@ -13,7 +13,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +26,7 @@ import java.util.UUID;
  * 基础聊天 Agent
  *
  * 说明：
- * - 默认优先使用 deepseek-v4-flash
+ * - 默认优先使用 deepseek-chat
  * - 当主模型请求失败时，自动切换到 qwen3.6-plus 兜底
  * - 这里的兜底逻辑只负责“请求失败后的再次尝试”，不会影响正常主链路
  */
@@ -83,7 +88,11 @@ public class ChatAgent {
             auditService.saveAgentInvocation(conversationId, "simple", modelConfig.getPrimaryModel(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
             return response;
         } catch (Exception primaryEx) {
-            log.warn("SimpleChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage());
+            if (isNetworkConnectivityException(primaryEx)) {
+                log.warn("SimpleChat 检测到网络连通异常，立即切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            } else {
+                log.warn("SimpleChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            }
             return simpleChatFallback(conversationId, userMessage, thinkingMode, primaryEx);
         }
     }
@@ -123,7 +132,11 @@ public class ChatAgent {
             log.debug("MemoryChat [{}] 回复 (历史{}轮): {}", conversationId, historySize, response.getReply());
             return response;
         } catch (Exception primaryEx) {
-            log.warn("MemoryChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage());
+            if (isNetworkConnectivityException(primaryEx)) {
+                log.warn("MemoryChat 检测到网络连通异常，立即切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            } else {
+                log.warn("MemoryChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            }
             return memoryChatFallback(conversationId, userMessage, thinkingMode, primaryEx);
         }
     }
@@ -167,7 +180,11 @@ public class ChatAgent {
             auditService.saveAgentInvocation(conversationId, "expert", modelConfig.getPrimaryModel(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
             return response;
         } catch (Exception primaryEx) {
-            log.warn("ExpertChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage());
+            if (isNetworkConnectivityException(primaryEx)) {
+                log.warn("ExpertChat 检测到网络连通异常，立即切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            } else {
+                log.warn("ExpertChat 主模型调用失败，准备切换兜底模型: {}", primaryEx.getMessage(), primaryEx);
+            }
             return expertChatFallback(conversationId, userMessage, role, level, thinkingMode, primaryEx);
         }
     }
@@ -176,23 +193,7 @@ public class ChatAgent {
      * 构造思考模式系统提示
      */
     private String buildThinkingSystemPrompt(boolean thinkingMode, boolean useMemory, String role, String level) {
-        if (!thinkingMode) {
-            return "请直接、简洁、准确地回答用户，不要输出思考过程。";
-        }
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("你需要先进行思考，再给出最终答案。\n");
-        prompt.append("如果模型支持思考模式，请先在内部推理，再输出最终回答。\n");
-        prompt.append("如果无法显式输出思考过程，也请只返回最终答案。\n");
-        if (useMemory) {
-            prompt.append("当前场景需要结合上下文进行回答。\n");
-        }
-        if (role != null && !role.isBlank()) {
-            prompt.append("角色：").append(role).append("。\n");
-        }
-        if (level != null && !level.isBlank()) {
-            prompt.append("等级：").append(level).append("。\n");
-        }
-        return prompt.toString();
+        return "请直接、简洁、准确地回答用户，不要输出思考过程。";
     }
 
     private ChatResponse buildResponse(String conversationId, String reply, String modelName, Integer historySize, boolean thinkingMode) {
@@ -222,7 +223,7 @@ public class ChatAgent {
             auditService.saveAgentInvocation(conversationId, "simple-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
             return response;
         } catch (Exception fallbackEx) {
-            log.error("SimpleChat 兜底模型也调用失败", fallbackEx);
+            log.error("SimpleChat 兜底模型也调用失败, primaryError={}, fallbackError={}", primaryEx.getMessage(), fallbackEx.getMessage(), fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);
         }
     }
@@ -246,7 +247,7 @@ public class ChatAgent {
             auditService.saveAgentInvocation(conversationId, "memory-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
             return response;
         } catch (Exception fallbackEx) {
-            log.error("MemoryChat 兜底模型也调用失败", fallbackEx);
+            log.error("MemoryChat 兜底模型也调用失败, primaryError={}, fallbackError={}", primaryEx.getMessage(), fallbackEx.getMessage(), fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);
         }
     }
@@ -275,7 +276,7 @@ public class ChatAgent {
             auditService.saveAgentInvocation(conversationId, "expert-fallback", modelConfig.getFallbackModelName(), userMessage, response.getReply(), response.getThinking(), "SUCCESS", 0L);
             return response;
         } catch (Exception fallbackEx) {
-            log.error("ExpertChat 兜底模型也调用失败", fallbackEx);
+            log.error("ExpertChat 兜底模型也调用失败, primaryError={}, fallbackError={}", primaryEx.getMessage(), fallbackEx.getMessage(), fallbackEx);
             throw new RuntimeException("主模型与兜底模型均调用失败: " + fallbackEx.getMessage(), fallbackEx);
         }
     }
@@ -340,6 +341,21 @@ public class ChatAgent {
             return UUID.randomUUID().toString().replace("-", "");
         }
         return conversationId;
+    }
+
+    private boolean isNetworkConnectivityException(Throwable ex) {
+        Throwable current = ex;
+        while (current != null) {
+            if (current instanceof ResourceAccessException
+                    || current instanceof ConnectException
+                    || current instanceof SocketException
+                    || current instanceof SocketTimeoutException
+                    || current instanceof UnknownHostException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private record ThinkingParts(String finalAnswer, String thinking) {}

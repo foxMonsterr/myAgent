@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export interface DemoFlowStepVO {
   title: string
@@ -8,4 +7,4 @@ export interface DemoFlowStepVO {
   highlight: string
 }
 
-export const getDemoFlow = () => request.get<ApiResponse<DemoFlowStepVO[]>>('/api/v1/demo/flow').then(res => res.data)
+export const getDemoFlow = () => request.get<DemoFlowStepVO[]>('/api/v1/demo/flow')

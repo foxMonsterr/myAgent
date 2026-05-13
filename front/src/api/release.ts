@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import type { ApiResponse } from '@/types/auth'
 
 export interface ReleaseChecklistVO {
   items: string[]
@@ -12,5 +11,5 @@ export interface ReleaseSummaryVO {
   status: string
 }
 
-export const getReleaseChecklist = () => request.get<ApiResponse<ReleaseChecklistVO>>('/api/v1/release/checklist').then(res => res.data)
-export const getReleaseSummary = () => request.get<ApiResponse<ReleaseSummaryVO>>('/api/v1/release/summary').then(res => res.data)
+export const getReleaseChecklist = () => request.get('/api/v1/release/checklist')
+export const getReleaseSummary = () => request.get('/api/v1/release/summary')

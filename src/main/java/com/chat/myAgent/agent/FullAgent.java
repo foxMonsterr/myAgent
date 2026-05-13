@@ -67,7 +67,7 @@ public class FullAgent {
         return AgentResponse.builder()
                 .conversationId(resolvedId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .agentType("full")
                 .build();
     }

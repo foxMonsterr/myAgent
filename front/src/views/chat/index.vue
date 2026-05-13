@@ -144,7 +144,6 @@ const handleSend = async () => {
   response.value = null
   try {
     addLog('request', `mode=${form.mode}, conversationId=${form.conversationId || '-'}`)
-    let res: any
     const payload = {
       conversationId: form.conversationId.trim() || undefined,
       message: form.message.trim(),
@@ -153,12 +152,11 @@ const handleSend = async () => {
       thinkingMode: form.thinkingMode,
     }
 
-    if (form.mode === 'memory') res = await sendMemoryChat(payload)
-    else if (form.mode === 'expert') res = await sendExpertChat(payload)
-    else res = await sendSimpleChat(payload)
+    if (form.mode === 'memory') response.value = await sendMemoryChat(payload)
+    else if (form.mode === 'expert') response.value = await sendExpertChat(payload)
+    else response.value = await sendSimpleChat(payload)
 
-    response.value = res
-    addLog('success', `请求成功 traceId=${res?.traceId || '-'}`)
+    addLog('success', `请求成功 traceId=${response.value?.traceId || '-'}`)
   } catch (e: any) {
     addLog('error', e?.message || '请求失败')
   } finally {

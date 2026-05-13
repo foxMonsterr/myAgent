@@ -36,10 +36,14 @@ const loading = ref(false)
 const handleInit = async () => {
   loading.value = true
   try {
-    const res = await initAdmin()
-    userStore.setAuth(res)
+    const auth = await initAdmin()
+    if (!auth || !auth.token) {
+      ElMessage.error('初始化失败，返回数据为空或缺少 token')
+      return
+    }
+    userStore.setAuth(auth)
     ElMessage.success('管理员初始化成功')
-    router.push('/dashboard')
+    router.push('/home')
   } finally {
     loading.value = false
   }

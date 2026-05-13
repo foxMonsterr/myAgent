@@ -107,7 +107,7 @@ public class PlanningAgent {
                         .totalTimeMs(totalTime)
                         .traceId(TraceContext.getTraceId())
                         .build();
-                auditService.saveAgentInvocation(resolvedConversationId, "planning-direct", "deepseek-v4-flash", task, response.getDirectAnswer(), null, "SUCCESS", totalTime);
+                auditService.saveAgentInvocation(resolvedConversationId, "planning-direct", "deepseek-chat", task, response.getDirectAnswer(), null, "SUCCESS", totalTime);
                 return response;
             }
 
@@ -137,7 +137,7 @@ public class PlanningAgent {
                         .totalTimeMs(totalTime)
                         .traceId(TraceContext.getTraceId())
                         .build();
-                auditService.saveAgentInvocation(resolvedConversationId, "planning-only", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+                auditService.saveAgentInvocation(resolvedConversationId, "planning-only", "deepseek-chat", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
                 return response;
             }
 
@@ -157,7 +157,7 @@ public class PlanningAgent {
                     .totalTimeMs(totalTime)
                     .traceId(TraceContext.getTraceId())
                     .build();
-            auditService.saveAgentInvocation(resolvedConversationId, "planning-execute", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+            auditService.saveAgentInvocation(resolvedConversationId, "planning-execute", "deepseek-chat", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
             return response;
 
         } catch (Exception e) {
@@ -331,7 +331,7 @@ public class PlanningAgent {
                 .totalTimeMs(totalTime)
                 .traceId(TraceContext.getTraceId())
                 .build();
-        auditService.saveAgentInvocation(conversationId, "planning-fallback", "deepseek-v4-flash", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
+        auditService.saveAgentInvocation(conversationId, "planning-fallback", "deepseek-chat", task, response.getFinalAnswer(), null, "SUCCESS", totalTime);
         return response;
     }
 

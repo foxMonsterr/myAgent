@@ -1,7 +1,6 @@
 package com.chat.myAgent.controller;
 
 import com.chat.myAgent.agent.ToolAgent;
-import com.chat.myAgent.common.context.TraceContext;
 import com.chat.myAgent.common.result.R;
 import com.chat.myAgent.model.dto.AgentRequest;
 import com.chat.myAgent.model.vo.AgentResponse;
@@ -9,7 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Agent 工具调用接口
@@ -33,9 +35,8 @@ public class AgentController {
     @Operation(summary = "工具调用对话（无记忆）", description = "AI根据问题自主决定是否调用工具，不保留上下文")
     @PostMapping("/chat")
     public R<AgentResponse> chat(@Valid @RequestBody AgentRequest request) {
-        AgentResponse response = request.getThinkingMode() != null && request.getThinkingMode()
-                ? toolAgent.chatWithMemory(request)
-                : toolAgent.chat(request);
+        AgentRequest safeRequest = sanitizeThinkingMode(request);
+        AgentResponse response = toolAgent.chat(safeRequest);
         return R.ok(response);
     }
 
@@ -49,7 +50,8 @@ public class AgentController {
     @Operation(summary = "工具调用对话（带记忆）", description = "在工具调用基础上增加多轮记忆，适合需要上下文的连续工具调用场景")
     @PostMapping("/chat/memory")
     public R<AgentResponse> chatWithMemory(@Valid @RequestBody AgentRequest request) {
-        AgentResponse response = toolAgent.chatWithMemory(request);
+        AgentRequest safeRequest = sanitizeThinkingMode(request);
+        AgentResponse response = toolAgent.chatWithMemory(safeRequest);
         return R.ok(response);
     }
 
@@ -68,11 +70,20 @@ public class AgentController {
     @Operation(summary = "指定工具对话", description = "只启用请求中指定的工具，限制AI的工具调用范围")
     @PostMapping("/chat/specific")
     public R<AgentResponse> chatWithSpecificTools(@Valid @RequestBody AgentRequest request) {
-        if (request.getTools() == null || request.getTools().isEmpty()) {
-            return R.ok(toolAgent.chat(request));
+        AgentRequest safeRequest = sanitizeThinkingMode(request);
+        if (safeRequest.getTools() == null || safeRequest.getTools().isEmpty()) {
+            return R.ok(toolAgent.chat(safeRequest));
         }
-        String[] toolNames = request.getTools().toArray(new String[0]);
-        AgentResponse response = toolAgent.chatWithSpecificTools(request, toolNames);
+        String[] toolNames = safeRequest.getTools().toArray(new String[0]);
+        AgentResponse response = toolAgent.chatWithSpecificTools(safeRequest, toolNames);
         return R.ok(response);
+    }
+
+    private AgentRequest sanitizeThinkingMode(AgentRequest request) {
+        if (request == null) {
+            return null;
+        }
+        request.setThinkingMode(false);
+        return request;
     }
 }

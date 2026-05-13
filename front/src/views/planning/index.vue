@@ -113,12 +113,11 @@ const handleExecute = async () => {
   loading.execute = true
   try {
     addLog('request', '执行任务规划并执行')
-    const res: any = await planAndExecute({
+    result.value = await planAndExecute({
       task: form.task.trim(),
       conversationId: form.conversationId.trim() || undefined,
       autoExecute: form.autoExecute,
     })
-    result.value = res
     addLog('success', '执行成功')
   } catch (e: any) {
     addLog('error', e?.message || '执行失败')
@@ -132,12 +131,11 @@ const handlePlanOnly = async () => {
   loading.execute = true
   try {
     addLog('request', '仅执行规划')
-    const res: any = await planOnly({
+    result.value = await planOnly({
       task: form.task.trim(),
       conversationId: form.conversationId.trim() || undefined,
       autoExecute: false,
     })
-    result.value = res
     addLog('success', '规划成功')
   } catch (e: any) {
     addLog('error', e?.message || '规划失败')
@@ -151,11 +149,10 @@ const handleChat = async () => {
   loading.chat = true
   try {
     addLog('request', '调用全能 Agent 入口')
-    const res: any = await planningChat({
+    result.value = await planningChat({
       message: form.task.trim(),
       conversationId: form.conversationId.trim() || undefined,
     })
-    result.value = res
     addLog('success', 'Agent 调用成功')
   } catch (e: any) {
     addLog('error', e?.message || 'Agent 调用失败')

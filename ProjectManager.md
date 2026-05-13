@@ -1733,7 +1733,7 @@ spring:
       api-key: ${DeepSeek_API_KEY}
       chat:
         options:
-          model: deepseek-v4-flash
+          model: deepseek-chat
           temperature: 0.7
           max-tokens: 4096
 然后我还改了一下springboot的版本和springai的版本,更改如下
@@ -1747,7 +1747,7 @@ spring:
         <java.version>17</java.version>
         <spring-ai.version>1.1.5</spring-ai.version>
     </properties>
-用的模型为deepseek-v4-flash,第一阶段的内容我已经完成,接口全部回应了正确的响应,后续请按照这个配置帮我完成第二阶段的内容,且编写内容的时候给我提供一份系统说明文档书文档后缀为.md格式
+用的模型为deepseek-chat,第一阶段的内容我已经完成,接口全部回应了正确的响应,后续请按照这个配置帮我完成第二阶段的内容,且编写内容的时候给我提供一份系统说明文档书文档后缀为.md格式
 ```
 
 **assistant**: 
@@ -2064,7 +2064,7 @@ public class ChatAgent {
         return ChatResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .build();
     }
 
@@ -2098,7 +2098,7 @@ public class ChatAgent {
         return ChatResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .historySize(historySize)
                 .build();
     }
@@ -2134,7 +2134,7 @@ public class ChatAgent {
         return ChatResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .historySize(historySize)
                 .build();
     }
@@ -2838,7 +2838,7 @@ public class AgentConstants {
     private AgentConstants() {}
 
     // ==================== 模型相关 ====================
-    public static final String DEFAULT_MODEL = "deepseek-v4-flash";
+    public static final String DEFAULT_MODEL = "deepseek-chat";
     public static final String QWEN_MODEL = "qwen-plus";
     public static final String QWEN_TURBO = "qwen-turbo";
 
@@ -3151,7 +3151,7 @@ Content-Type: application/json
 {
   "conversationId": "xxx",
   "reply": "AI回复内容",
-  "model": "deepseek-v4-flash",
+  "model": "deepseek-chat",
   "historySize": 4
 }
 
@@ -3263,7 +3263,7 @@ spring:
       api-key: ${DeepSeek_API_KEY}
       chat:
         options:
-          model: deepseek-v4-flash
+          model: deepseek-chat
           temperature: 0.7
           max-tokens: 4096
 
@@ -4344,7 +4344,7 @@ public class ToolAgent {
         return AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .agentType("tool")
                 .build();
     }
@@ -4377,7 +4377,7 @@ public class ToolAgent {
         return AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .agentType("tool-memory")
                 .build();
     }
@@ -4406,7 +4406,7 @@ public class ToolAgent {
         return AgentResponse.builder()
                 .conversationId(conversationId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .agentType("tool-specific")
                 .build();
     }
@@ -4978,13 +4978,13 @@ spring:
       api-key: ${DeepSeek_API_KEY}
       chat:
         options:
-          model: deepseek-v4-flash
+          model: deepseek-chat
           temperature: 0.7
           max-tokens: 4096
       # Embedding 模型配置
       embedding:
         options:
-          model: deepseek-v4-flash  # DeepSeek是否支持embedding需确认，见下方备选方案
+          model: deepseek-chat  # DeepSeek是否支持embedding需确认，见下方备选方案
 
   # 文件上传配置
   servlet:
@@ -5628,7 +5628,7 @@ public class RagAgent {
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .build();
     }
 
@@ -5653,7 +5653,7 @@ public class RagAgent {
                     .answer("抱歉，知识库中暂无与您问题相关的信息。请尝试上传相关文档后再提问。")
                     .sources(List.of())
                     .retrievedChunks(0)
-                    .model("deepseek-v4-flash")
+                    .model("deepseek-chat")
                     .build();
         }
 
@@ -5682,7 +5682,7 @@ public class RagAgent {
                 .answer(reply)
                 .sources(sources)
                 .retrievedChunks(relatedDocs.size())
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .build();
     }
 
@@ -6755,7 +6755,7 @@ public class ModelConfig {
     /**
      * 默认模型名称
      */
-    private String defaultModel = "deepseek-v4-flash";
+    private String defaultModel = "deepseek-chat";
 
     /**
      * 可用模型列表
@@ -6781,9 +6781,9 @@ public class ModelConfig {
 
 smart-agent:
   models:
-    default-model: deepseek-v4-flash
+    default-model: deepseek-chat
     available:
-      deepseek: deepseek-v4-flash
+      deepseek: deepseek-chat
       deepseek-chat: deepseek-chat
       # 如果你有其他模型的Key，可以继续添加
       # qwen: qwen-plus
@@ -7495,7 +7495,7 @@ public class FullAgent {
         return AgentResponse.builder()
                 .conversationId(resolvedId)
                 .reply(reply)
-                .model("deepseek-v4-flash")
+                .model("deepseek-chat")
                 .agentType("full")
                 .build();
     }
@@ -8939,7 +8939,7 @@ spring:
       api-key: ${DeepSeek_API_KEY:your-api-key-here}
       chat:
         options:
-          model: ${AI_MODEL:deepseek-v4-flash}
+          model: ${AI_MODEL:deepseek-chat}
           temperature: 0.7
           max-tokens: 4096
 
@@ -8974,7 +8974,7 @@ spring:
       api-key: ${DeepSeek_API_KEY}
       chat:
         options:
-          model: deepseek-v4-flash
+          model: deepseek-chat
           temperature: 0.7
           max-tokens: 4096
 
@@ -9018,9 +9018,9 @@ smart-agent:
     secret: smartagent-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
     expiration-hours: 24
   models:
-    default-model: deepseek-v4-flash
+    default-model: deepseek-chat
     available:
-      deepseek: deepseek-v4-flash
+      deepseek: deepseek-chat
       deepseek-chat: deepseek-chat
   rag:
     vector-store-path: ./data/vectorstore/vector-store.json
@@ -9048,7 +9048,7 @@ spring:
       api-key: ${DeepSeek_API_KEY}
       chat:
         options:
-          model: deepseek-v4-flash
+          model: deepseek-chat
           temperature: 0.3
           max-tokens: 4096
 

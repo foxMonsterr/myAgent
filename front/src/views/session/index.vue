@@ -133,7 +133,7 @@ const handleLoadHistory = async () => {
   }
   loading.history = true
   try {
-    const res: any = await getSessionHistory(form.conversationId.trim())
+    const res = await getSessionHistory(form.conversationId.trim())
     history.value = res || []
     setMessage(`加载到 ${history.value.length} 条会话消息`, 'success')
   } finally {
