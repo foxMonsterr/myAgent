@@ -31,10 +31,10 @@ public class PermissionController {
         List<String> menus;
         List<String> actions;
         if ("ROLE_ADMIN".equals(role)) {
-            menus = List.of("home", "demo", "resume", "deploy", "dashboard", "chat", "agent", "knowledge", "planning", "stream", "session", "monitor", "audit", "docs", "admin");
+            menus = List.of("home", "demo", "deploy", "dashboard", "chat", "agent", "knowledge", "planning", "stream", "session", "monitor", "audit", "docs", "admin");
             actions = List.of("knowledge:upload", "knowledge:delete", "monitor:view", "session:delete", "user:manage", "audit:view", "deploy:view");
         } else {
-            menus = List.of("home", "demo", "resume", "deploy", "dashboard", "chat", "agent", "knowledge", "planning", "stream", "session", "docs");
+            menus = List.of("home", "demo", "deploy", "dashboard", "chat", "agent", "knowledge", "planning", "stream", "session", "docs");
             actions = List.of("session:view", "deploy:view");
         }
 

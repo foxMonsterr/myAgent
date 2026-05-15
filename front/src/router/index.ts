@@ -17,7 +17,6 @@ const router = createRouter({
       children: [
         { path: 'home', name: 'Home', component: () => import('@/views/home/index.vue'), meta: { title: '首页', requiresAuth: true } },
         { path: 'demo', name: 'Demo', component: () => import('@/views/demo/index.vue'), meta: { title: '演示中心', requiresAuth: true } },
-        { path: 'resume', name: 'Resume', component: () => import('@/views/resume/index.vue'), meta: { title: '简历项目', requiresAuth: true } },
         { path: 'deploy', name: 'Deploy', component: () => import('@/views/deploy/index.vue'), meta: { title: '部署验收', requiresAuth: true } },
         { path: 'release', name: 'Release', component: () => import('@/views/release/index.vue'), meta: { title: '发布说明', requiresAuth: true } },
         { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/dashboard/index.vue'), meta: { title: '仪表盘', requiresAuth: true } },
