@@ -47,23 +47,6 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <el-row :gutter="16" class="mt16">
-      <el-col :span="24">
-        <el-card shadow="never" class="resume-card">
-          <template #header>
-            <div class="flow-header">
-              <span>简历描述</span>
-              <el-button type="primary" plain @click="$router.push('/docs')">查看接口文档</el-button>
-            </div>
-          </template>
-          <div class="resume-summary">{{ resume?.summary }}</div>
-          <div class="resume-tags">
-            <el-tag v-for="tag in resume?.techStack || []" :key="tag" class="mr8">{{ tag }}</el-tag>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
@@ -71,13 +54,11 @@
 import { onMounted, ref } from 'vue'
 import { getHomeOverview, type HomeOverviewVO } from '@/api/home'
 import { getDemoFlow, type DemoFlowStepVO } from '@/api/demo'
-import { getResumeProject, type ResumeProjectVO } from '@/api/resume'
 import type { OpsMetricVO } from '@/api/ops'
 
 const overview = ref<HomeOverviewVO | null>(null)
 const metrics = ref<OpsMetricVO[]>([])
 const flowSteps = ref<DemoFlowStepVO[]>([])
-const resume = ref<ResumeProjectVO | null>(null)
 const defaultHighlights = [
   'JWT + RBAC 权限体系',
   'TraceId 全链路追踪',
@@ -89,7 +70,6 @@ const load = async () => {
   overview.value = await getHomeOverview()
   metrics.value = overview.value?.metrics || []
   flowSteps.value = await getDemoFlow()
-  resume.value = await getResumeProject()
 }
 
 onMounted(load)
@@ -97,7 +77,7 @@ onMounted(load)
 
 <style scoped>
 .home-page { padding: 12px; }
-.hero-card, .metric-card, .flow-card, .resume-card { min-height: 240px; border-radius: 12px; }
+.hero-card, .metric-card, .flow-card { min-height: 240px; border-radius: 12px; }
 .hero-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
 .hero-desc { color: #606266; line-height: 1.8; }
 .mt16 { margin-top: 16px; }
@@ -107,7 +87,4 @@ onMounted(load)
 .metric-value { font-size: 28px; font-weight: 700; margin-top: 8px; }
 .metric-subtitle { color: #909399; margin-top: 6px; }
 .flow-header { display: flex; justify-content: space-between; align-items: center; }
-.resume-summary { line-height: 1.9; color: #374151; margin-bottom: 12px; }
-.resume-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.mr8 { margin-right: 8px; }
 </style>

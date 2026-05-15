@@ -64,7 +64,6 @@ const visibleMenus = computed(() => {
   const menus = [
     { index: '/dashboard', label: '仪表盘', key: 'dashboard' },
     { index: '/demo', label: '演示中心', key: 'demo' },
-    { index: '/resume', label: '简历项目', key: 'resume' },
     { index: '/deploy', label: '部署验收', key: 'deploy' },
     { index: '/release', label: '发布说明', key: 'release' },
     { index: '/docs', label: '接口文档', key: 'docs' },

@@ -1,0 +1,507 @@
+# AI Agent 管理台项目模块说明文档
+
+## 1. 项目概览
+
+本项目分为前端 `front` 和后端 `src` 两部分：
+
+- 前端负责页面展示、路由控制、状态管理、接口调用和流式消息展示。
+- 后端负责认证鉴权、Agent 编排、知识库检索、会话管理、监控审计和业务数据接口。
+
+---
+
+## 2. 前端模块说明
+
+### 2.1 技术栈
+
+- `Vue 3`
+- `TypeScript`
+- `Vite`
+- `Pinia`
+- `Vue Router`
+- `Element Plus`
+
+### 2.2 基础入口与公共能力
+
+#### `main.ts`
+- 应用入口文件。
+- 负责初始化 Vue 实例，并挂载路由、状态管理和全局样式。
+
+#### `App.vue`
+- 根组件。
+- 作为整个前端应用的顶层容器。
+
+#### `layouts/BasicLayout.vue`
+- 主布局组件。
+- 负责承载侧边栏、顶部栏、内容区等主框架结构。
+
+#### `router/index.ts`
+- 路由配置中心。
+- 定义登录、注册、首页、业务页面等路由。
+- 实现登录鉴权、权限校验、标题切换和访问拦截。
+
+#### `store/modules/user.ts`
+- 用户状态管理模块。
+- 维护用户信息、Token 和登录状态。
+
+#### `store/modules/permission.ts`
+- 权限状态管理模块。
+- 负责菜单权限加载与页面访问控制。
+
+#### `utils/request.ts`
+- Axios 请求封装。
+- 统一处理请求拦截、响应拦截和错误提示。
+
+#### `composables/useSseStream.ts`
+- SSE 流式消息接收封装。
+- 用于流式对话、实时推送等场景。
+
+### 2.3 页面模块
+
+#### `login`
+- 用户登录页面。
+- 提供账号密码登录入口。
+
+#### `register`
+- 用户注册页面。
+- 提供新用户注册功能。
+
+#### `init-admin`
+- 初始化管理员页面。
+- 用于首次部署时创建管理员账号。
+
+#### `home`
+- 首页概览页面。
+- 展示系统核心信息与入口导航。
+
+#### `dashboard`
+- 数据仪表盘页面。
+- 用于展示统计数据和业务指标。
+
+#### `demo`
+- 演示中心页面。
+- 用于展示项目能力和交互演示。
+
+#### `deploy`
+- 部署验收页面。
+- 用于展示部署检查与验收结果。
+
+#### `release`
+- 发布说明页面。
+- 用于展示版本发布信息。
+
+#### `docs`
+- 接口文档页面。
+- 用于查看后端接口说明。
+
+#### `chat`
+- 对话管理页面。
+- 用于管理普通聊天内容和会话。
+
+#### `agent`
+- Agent 管理页面。
+- 用于配置、查看或执行 Agent 相关能力。
+
+#### `knowledge`
+- 知识库管理页面。
+- 用于知识文档上传、维护和检索。
+
+#### `planning`
+- 任务规划页面。
+- 用于任务拆解和执行规划。
+
+#### `stream`
+- 流式对话页面。
+- 用于展示实时生成结果。
+
+#### `session`
+- 会话管理页面。
+- 用于查看和管理历史会话。
+
+#### `monitor`
+- 监控面板页面。
+- 用于查看系统运行状态和指标。
+
+#### `audit`
+- 审计日志页面。
+- 用于查看关键操作日志。
+
+#### `admin`
+- 用户与权限管理页面。
+- 用于管理员维护用户、角色和权限。
+
+### 2.4 API 分层
+
+#### `api/auth.ts`
+- 登录、注册、退出和身份信息相关接口。
+
+#### `api/home.ts`
+- 首页概览数据接口。
+
+#### `api/chat.ts`
+- 普通聊天接口。
+
+#### `api/stream.ts`
+- 流式对话接口。
+
+#### `api/agent.ts`
+- Agent 编排与执行接口。
+
+#### `api/knowledge.ts`
+- 知识库管理接口。
+
+#### `api/planning.ts`
+- 任务规划相关接口。
+
+#### `api/session.ts`
+- 会话管理接口。
+
+#### `api/monitor.ts`
+- 监控数据接口。
+
+#### `api/audit.ts`
+- 审计日志接口。
+
+#### `api/admin.ts`
+- 用户与管理员管理接口。
+
+#### `api/deploy.ts`
+- 部署验收相关接口。
+
+#### `api/release.ts`
+- 发布说明相关接口。
+
+#### `api/performance.ts`
+- 性能分析接口。
+
+#### `api/ops.ts`
+- 运维看板接口。
+
+#### `api/health.ts`
+- 健康检查接口。
+
+#### `api/demo.ts`
+- 演示流程接口。
+
+### 2.5 类型定义
+
+#### `types/auth.ts`
+- 认证相关数据结构定义。
+
+#### `types/chat.ts`
+- 聊天消息结构定义。
+
+#### `types/stream.ts`
+- 流式消息结构定义。
+
+#### `types/agent.ts`
+- Agent 任务结构定义。
+
+#### `types/knowledge.ts`
+- 知识库结构定义。
+
+#### `types/planning.ts`
+- 规划请求与响应结构定义。
+
+#### `types/session.ts`
+- 会话结构定义。
+
+#### `types/monitor.ts`
+- 监控数据结构定义。
+
+#### `types/docs.ts`
+- 文档结构定义。
+
+---
+
+## 3. 后端模块说明
+
+### 3.1 启动与配置
+
+#### `main/MainApplication.java`
+- Spring Boot 启动入口。
+- 负责启动整个后端应用。
+
+#### `config/ChatClientConfig.java`
+- 大模型客户端配置。
+- 用于配置 OpenAI 兼容客户端。
+
+#### `config/ModelConfig.java`
+- 模型选择与封装配置。
+- 负责统一模型使用入口。
+
+#### `config/SecurityConfig.java`
+- 安全认证配置。
+- 负责登录、鉴权和请求安全策略。
+
+#### `config/MemoryConfig.java`
+- 会话记忆配置。
+- 负责上下文记忆相关能力。
+
+#### `config/RedisConfig.java`
+- Redis 连接与序列化配置。
+- 用于缓存、会话或限流等场景。
+
+#### `config/EmbeddingConfig.java`
+- 向量嵌入配置。
+- 支撑知识库向量化。
+
+#### `config/VectorStoreConfig.java`
+- 向量库配置。
+- 负责向量存储初始化和读取。
+
+#### `config/WebConfig.java`
+- Web 通用配置。
+- 包括跨域、拦截器或资源映射等。
+
+#### `config/TraceConfig.java`
+- 链路追踪配置。
+- 用于请求上下文传递与日志追踪。
+
+#### `config/Knife4jConfig.java`
+- 接口文档配置。
+- 负责生成 API 文档页面。
+
+#### `config/ResponseHeaderAdvice.java`
+- 响应头统一处理。
+- 用于补充或规范响应头信息。
+
+### 3.2 控制器层 `controller`
+
+#### `AuthController`
+- 登录、注册与认证相关接口。
+
+#### `ChatController`
+- 普通聊天接口。
+
+#### `StreamController`
+- SSE 或流式对话接口。
+
+#### `AgentController`
+- Agent 执行与编排接口。
+
+#### `PlanningController`
+- 任务规划接口。
+
+#### `KnowledgeController`
+- 知识库管理接口。
+
+#### `SessionController`
+- 会话管理接口。
+
+#### `MonitorController`
+- 监控面板接口。
+
+#### `AuditController`
+- 审计日志接口。
+
+#### `AdminController`
+- 管理员与用户管理接口。
+
+#### `HomeController`
+- 首页概览数据接口。
+
+#### `DeployController`
+- 部署验收数据接口。
+
+#### `ReleaseController`
+- 发布说明数据接口。
+
+#### `DemoController`
+- 演示流程接口。
+
+#### `OpsController`
+- 运维统计接口。
+
+#### `PerformanceController`
+- 性能分析接口。
+
+#### `HealthController`
+- 健康检查接口。
+
+#### `PermissionController`
+- 权限与菜单接口。
+
+#### `PageController`
+- 页面路由支撑接口。
+
+#### `SystemInfoController`
+- 系统信息接口。
+
+### 3.3 Agent 与能力层
+
+#### `agent/ChatAgent.java`
+- 对话型 Agent。
+- 负责普通聊天处理。
+
+#### `agent/StreamAgent.java`
+- 流式输出 Agent。
+- 负责边生成边返回结果。
+
+#### `agent/PlanningAgent.java`
+- 规划型 Agent。
+- 用于任务拆解和步骤规划。
+
+#### `agent/RagAgent.java`
+- 检索增强生成 Agent。
+- 结合知识库进行回答。
+
+#### `agent/StructuredAgent.java`
+- 结构化输出 Agent。
+- 负责生成结构化结果。
+
+#### `agent/FullAgent.java`
+- 综合型 Agent 编排。
+- 负责整合多类能力执行复杂任务。
+
+#### `agent/ToolAgent.java`
+- 工具调用型 Agent。
+- 负责调用外部工具完成任务。
+
+### 3.4 工具层 `tool`
+
+#### `TranslateTool.java`
+- 翻译工具。
+- 用于多语言文本转换。
+
+#### `DocParseTool.java`
+- 文档解析工具。
+- 用于读取和解析文档内容。
+
+#### `DbQueryTool.java`
+- 数据库查询工具。
+- 用于执行数据库检索。
+
+#### `DateTimeTool.java`
+- 时间日期工具。
+- 提供时间处理能力。
+
+#### `CalculatorTool.java`
+- 计算工具。
+- 提供数值计算能力。
+
+### 3.5 RAG 与知识库
+
+#### `rag/DocumentService.java`
+- 文档入库与处理服务。
+- 负责文档切分、索引或存储。
+
+#### `rag/RetrievalService.java`
+- 向量检索服务。
+- 用于从知识库中检索相关内容。
+
+#### `model/platform/KnowledgeDocumentContext.java`
+- 知识文档上下文对象。
+- 用于封装检索或入库过程中的文档信息。
+
+### 3.6 认证与安全
+
+#### `auth/JwtTokenProvider.java`
+- JWT 生成与解析。
+- 用于登录后身份认证。
+
+#### `auth/JwtAuthenticationFilter.java`
+- JWT 请求过滤器。
+- 用于在请求进入时校验 Token。
+
+#### `auth/UserDetailsServiceImpl.java`
+- 用户加载服务。
+- 用于 Spring Security 读取用户信息。
+
+#### `auth/JwtProperties.java`
+- JWT 参数配置。
+- 记录密钥和过期时间等参数。
+
+### 3.7 限流与追踪
+
+#### `common/ratelimit/RateLimitInterceptor.java`
+- 请求限流。
+- 用于防止接口被高频滥用。
+
+#### `common/context/TraceContext.java`
+- 请求追踪上下文。
+- 用于贯穿一次请求的标识信息。
+
+#### `common/context/TraceContextFilter.java`
+- 追踪上下文注入过滤器。
+- 在请求生命周期内初始化追踪信息。
+
+#### `common/context/TraceContextMdcFilter.java`
+- MDC 日志串联过滤器。
+- 让日志可按请求链路追踪。
+
+### 3.8 持久化层
+
+#### `repository/UserRepository.java`
+- 用户数据访问层。
+
+#### `repository/ChatHistoryRepository.java`
+- 聊天历史数据访问层。
+
+#### `repository/AgentInvocationRepository.java`
+- Agent 调用记录访问层。
+
+### 3.9 数据模型
+
+#### `dto`
+- 请求入参对象。
+- 用于承接前端提交的数据。
+
+#### `vo`
+- 页面返回对象。
+- 用于向前端输出展示数据。
+
+#### `entity`
+- 数据库实体对象。
+- 直接映射表结构。
+
+#### `platform`
+- Agent 执行上下文对象。
+- 用于封装 Agent 运行过程中的状态。
+
+### 3.10 全局能力
+
+#### `common/exception/GlobalExceptionHandler.java`
+- 全局异常处理。
+- 统一返回业务异常和系统异常信息。
+
+#### `common/result/R.java`
+- 统一返回体。
+- 用于规范接口响应格式。
+
+#### `common/constant/ResultCode.java`
+- 返回码定义。
+- 用于统一错误和成功编码。
+
+#### `common/constant/AgentConstants.java`
+- Agent 常量定义。
+- 存放 Agent 运行中的公共常量。
+
+---
+
+## 4. 配置文件说明
+
+### `src/main/resources/application-dev.yml`
+- 开发环境配置文件。
+- 包含大模型、H2 数据库、Redis、文件上传、JWT、RAG、限流和日志级别等配置。
+- 当前项目支持：
+  - `Qwen` 和 `DeepSeek` 大模型接入
+  - `H2` 本地开发数据库
+  - `Redis` 缓存与会话支持
+  - `RAG` 向量检索路径配置
+  - 接口上传大小限制
+  - 统一的 JWT 认证参数
+
+---
+
+## 5. 模块关系总览
+
+1. 前端通过 `api/*` 调用后端接口。
+2. 后端控制器接收请求后，调用 Agent、工具、RAG、服务和仓储层完成业务处理。
+3. 认证模块负责用户登录态与权限控制。
+4. 监控、审计、会话与知识库模块共同支撑 AI Agent 管理台的核心业务闭环。
+
+---
+
+## 6. 结论
+
+该项目是一个面向 AI Agent 管理、对话、知识库、监控和权限控制的一体化平台。前端负责用户交互与数据展示，后端负责业务编排、智能能力接入与数据持久化，整体结构清晰，适合继续扩展 Agent 能力与企业级管理功能。当前已移除简历项目展示模块。
