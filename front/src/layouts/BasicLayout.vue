@@ -30,6 +30,7 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item @click="goProfile">个人中心</el-dropdown-item>
                 <el-dropdown-item disabled>{{ userStore.username || '未登录' }}</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -52,6 +53,7 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import { usePermissionStore } from '@/store/modules/permission'
+import { authApi } from '@/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -63,6 +65,7 @@ const pageTitle = computed(() => (route.meta.title as string) || 'AI Agent 管�
 const visibleMenus = computed(() => {
   const menus = [
     { index: '/dashboard', label: '仪表盘', key: 'dashboard' },
+    { index: '/profile', label: '个人中心', key: 'profile' },
     { index: '/demo', label: '演示中心', key: 'demo' },
     { index: '/deploy', label: '部署验收', key: 'deploy' },
     { index: '/release', label: '发布说明', key: 'release' },
@@ -80,11 +83,21 @@ const visibleMenus = computed(() => {
   return menus.filter(item => permissionStore.menus.length === 0 || permissionStore.hasMenu(item.key))
 })
 
+const goProfile = () => {
+  router.push('/profile')
+}
+
 const handleLogout = async () => {
   await ElMessageBox.confirm('确认退出登录吗？', '提示', { type: 'warning' })
-  userStore.clearUser()
-  permissionStore.clearPermission()
-  router.push('/login')
+  try {
+    if (userStore.token) {
+      await authApi.logout()
+    }
+  } finally {
+    userStore.clearUser()
+    permissionStore.clearPermission()
+    router.push('/login')
+  }
 }
 
 onMounted(async () => {

@@ -9,6 +9,7 @@ const router = createRouter({
   routes: [
     { path: '/login', name: 'Login', component: () => import('@/views/login/index.vue'), meta: { title: '登录', requiresAuth: false } },
     { path: '/register', name: 'Register', component: () => import('@/views/register/index.vue'), meta: { title: '注册', requiresAuth: false } },
+    { path: '/forgot-password', name: 'ForgotPassword', component: () => import('@/views/forgot-password/index.vue'), meta: { title: '找回密码', requiresAuth: false } },
     { path: '/init-admin', name: 'InitAdmin', component: () => import('@/views/init-admin/index.vue'), meta: { title: '初始化管理员', requiresAuth: false } },
     {
       path: '/',
@@ -16,6 +17,7 @@ const router = createRouter({
       redirect: '/home',
       children: [
         { path: 'home', name: 'Home', component: () => import('@/views/home/index.vue'), meta: { title: '首页', requiresAuth: true } },
+        { path: 'profile', name: 'Profile', component: () => import('@/views/profile/index.vue'), meta: { title: '个人中心', requiresAuth: true } },
         { path: 'demo', name: 'Demo', component: () => import('@/views/demo/index.vue'), meta: { title: '演示中心', requiresAuth: true } },
         { path: 'deploy', name: 'Deploy', component: () => import('@/views/deploy/index.vue'), meta: { title: '部署验收', requiresAuth: true } },
         { path: 'release', name: 'Release', component: () => import('@/views/release/index.vue'), meta: { title: '发布说明', requiresAuth: true } },
@@ -68,7 +70,7 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
-  if ((to.path === '/login' || to.path === '/register' || to.path === '/init-admin') && hasToken) {
+  if ((to.path === '/login' || to.path === '/register' || to.path === '/init-admin' || to.path === '/forgot-password') && hasToken) {
     next('/home')
     return
   }

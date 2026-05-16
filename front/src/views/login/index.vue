@@ -17,6 +17,7 @@
 
       <div class="links">
         <router-link to="/register">注册账号</router-link>
+        <router-link to="/forgot-password">找回密码</router-link>
         <router-link to="/init-admin">初始化管理员</router-link>
       </div>
     </el-card>

@@ -19,25 +19,19 @@ spring:
       timeout: 60s
       connection-timeout: 30s
 
-  # H2 内存数据库（开发阶段，不需要安装MySQL）
+  # MySQL 数据库（开发阶段）
   datasource:
-    url: jdbc:h2:file:./data/smartagent-db;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/smart_agent_auth?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
 
   # JPA 配置
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: false
-
-  # H2 控制台（开发用，浏览器访问 http://localhost:8080/h2-console）
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
 
   # Redis 配置
   data:
@@ -45,7 +39,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: root
-      database: 0
+      database: 3
       timeout: 5000ms
 
   servlet:

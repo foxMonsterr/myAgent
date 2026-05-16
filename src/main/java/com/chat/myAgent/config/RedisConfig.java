@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -62,12 +63,16 @@ public class RedisConfig {
         // 设置所有属性可见（包括 private 属性）
         // 这样即使对象的属性是 private，也能被序列化
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.findAndRegisterModules();
         
         // 启用多态类型处理
         // 在 JSON 中存储对象的类型信息，反序列化时能正确还原为原始类型
         // 例如：["java.util.ArrayList", [...]] 会还原为 ArrayList 而非 LinkedList
         objectMapper.activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder().build(),  // 类型验证器
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfSubType("com.chat.myAgent")
+                        .build(),  // 类型验证器
                 ObjectMapper.DefaultTyping.NON_FINAL               // 对非 final 类型启用
         );
 
