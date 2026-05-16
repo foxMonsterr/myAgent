@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import type { PermissionVO } from '@/api/permission'
 import { getCurrentPermission } from '@/api/permission'
 
 interface PermissionState {

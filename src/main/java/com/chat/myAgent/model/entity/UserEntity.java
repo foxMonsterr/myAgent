@@ -19,14 +19,17 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false, length = 32)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Column(length = 100)
     private String nickname;
+
+    @Column(unique = true, length = 20)
+    private String phone;
 
     /**
      * 角色：USER / ADMIN
@@ -45,6 +48,9 @@ public class UserEntity {
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
+
+    @Column(name = "password_updated_at")
+    private LocalDateTime passwordUpdatedAt;
 
     @PrePersist
     protected void onCreate() {
